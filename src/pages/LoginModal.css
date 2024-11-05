@@ -1,0 +1,22 @@
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+	/* 모달이 다른 요소 위에 표시되도록 설정 */
+}
+
+.modal-content {
+	background: white;
+	padding: 20px;
+	border-radius: 8px;
+	width: 300px;
+	/* 원하는 크기로 조정 */
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}

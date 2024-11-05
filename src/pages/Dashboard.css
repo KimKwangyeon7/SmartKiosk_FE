@@ -1,0 +1,23 @@
+.content {
+	max-width: 800px;
+	/* 원하는 최대 너비로 설정 */
+	margin: 0 auto;
+	/* 가운데 정렬 */
+	margin-top: 40px;
+}
+
+.bar-data,
+.line-data,
+.period-data,
+.work-data,
+.time-data,
+.wicket-data,
+.wait-data {
+	max-width: 800px;
+	/* 원하는 최대 너비로 설정 */
+	margin: 0 auto;
+	/* 가운데 정렬 */
+	margin-top: 40px;
+	margin-bottom: 50px;
+	/* 아래 간격을 넓히기 위해 추가 */
+}
