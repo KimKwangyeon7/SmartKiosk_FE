@@ -13,6 +13,7 @@ import { logoutUser } from "../api/userApi";
 import "./Dashboard.css";
 import { Cookies } from "react-cookie";
 import { Link, useNavigate } from "react-router-dom";
+import { useIdleTimer } from "react-idle-timer";
 import {
   Chart as ChartJS,
   BarElement,
@@ -42,12 +43,34 @@ const deptNm = "강남지점";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const cookies = new Cookies();
+
+  // Remaining time state and idle timer setup
+  const [remaining, setRemaining] = useState(null);
+  const { getRemainingTime, reset } = useIdleTimer({
+    timeout: 300000, // 1 hour
+    onIdle: () => handleLogout(),
+    throttle: 500,
+  });
+
+  // Format remaining time as MM : SS
+  function millisToMinutesAndSeconds(millis) {
+    const minutes = Math.floor(millis / 60000);
+    const seconds = Math.floor((millis % 60000) / 1000);
+    return `${minutes < 10 ? "0" : ""}${minutes} : ${seconds < 10 ? "0" : ""}${seconds}`;
+  }
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRemaining(getRemainingTime());
+    }, 500);
+    return () => clearInterval(interval);
+  }, [getRemainingTime]);
 
   const handleLogout = async () => {
     try {
       await logoutUser(); // 로그아웃 API 호출
       localStorage.clear();
-      const cookies = new Cookies();
       // 기존 토큰 삭제
       cookies.remove("accessToken");
       navigate("/");
@@ -56,6 +79,7 @@ const Dashboard = () => {
       // 필요에 따라 사용자에게 오류 메시지를 표시할 수 있음
     }
   };
+
   //------------------------------------------------
   // 1. 평균 상담 시간
   const [data, setData] = useState({
@@ -466,6 +490,12 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
+      {/* 자동 로그아웃 기능 */}
+      <div className="session-control">
+        <span>남은 시간: {millisToMinutesAndSeconds(remaining)}</span>
+      </div>
+
+      {/* Navbar */}
       <div className="navbar">
         <Link to="/">
           <img className="logo" src={require("../assets/logo.svg").default} alt="iM 뱅크" />
@@ -478,6 +508,7 @@ const Dashboard = () => {
           </li>
         </ul>
       </div>
+
       <div className="bar-data">
         <Bar data={data} options={options} />
       </div>

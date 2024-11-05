@@ -391,3 +391,20 @@ h1 {
   /* 부모 요소의 전체 너비 차지 */
   box-sizing: border-box;
 }
+
+.session-control {
+  position: fixed;
+  /* 요소를 고정 위치로 설정 */
+  left: 0;
+  /* 화면 왼쪽 끝에 위치 */
+  bottom: 0;
+  /* 화면 아래쪽 끝에 위치 */
+  background-color: rgba(0, 0, 0, 0.7);
+  /* 반투명 배경 (선택 사항) */
+  color: white;
+  /* 텍스트 색상 */
+  padding: 10px;
+  /* 패딩 설정 (선택 사항) */
+  box-sizing: border-box;
+  /* 패딩과 테두리를 포함한 전체 너비 및 높이를 설정 */
+}

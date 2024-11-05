@@ -15,6 +15,7 @@ import {
 import Swal from "sweetalert2";
 import PreviewModal from "./PreviewModal";
 import { Cookies } from "react-cookie";
+import { useIdleTimer } from "react-idle-timer";
 
 const KioskScreen = () => {
   const navigate = useNavigate();
@@ -31,6 +32,23 @@ const KioskScreen = () => {
   const [isModifyingButton, setIsModifyingButton] = useState(false);
   const [refresh, setRefresh] = useState(1);
 
+  const cookies = new Cookies();
+
+  // Remaining time state and idle timer setup
+  const [remaining, setRemaining] = useState(null);
+  const { getRemainingTime, reset } = useIdleTimer({
+    timeout: 300000, // 1 hour
+    onIdle: () => handleLogout(),
+    throttle: 500,
+  });
+
+  // Format remaining time as MM : SS
+  function millisToMinutesAndSeconds(millis) {
+    const minutes = Math.floor(millis / 60000);
+    const seconds = Math.floor((millis % 60000) / 1000);
+    return `${minutes < 10 ? "0" : ""}${minutes} : ${seconds < 10 ? "0" : ""}${seconds}`;
+  }
+
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLogIn") === "true";
     setIsLoggedIn(loggedIn);
@@ -44,7 +62,12 @@ const KioskScreen = () => {
         setIsEditMode(true);
       }
     }
-  }, [refresh]);
+
+    const interval = setInterval(() => {
+      setRemaining(getRemainingTime());
+    }, 500);
+    return () => clearInterval(interval);
+  }, [getRemainingTime, refresh]);
 
   const fetchTicketInfoList = async (deptNm) => {
     try {
@@ -208,6 +231,12 @@ const KioskScreen = () => {
 
   return (
     <div className="kiosk-screen">
+      {/* 자동 로그아웃 기능 */}
+      {isEditMode && (
+        <div className="session-control">
+          <span>남은 시간: {millisToMinutesAndSeconds(remaining)}</span>
+        </div>
+      )}
       <div className="navbar">
         <img className="logo" src={logo} alt="iM 뱅크" />
         <ul className="navbar-menu">
