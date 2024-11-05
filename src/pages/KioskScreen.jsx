@@ -29,6 +29,7 @@ const KioskScreen = () => {
   const [newButtonName, setNewButtonName] = useState("");
   const [isAddingButton, setIsAddingButton] = useState(false);
   const [isModifyingButton, setIsModifyingButton] = useState(false);
+  const [refresh, setRefresh] = useState(1);
 
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLogIn") === "true";
@@ -43,7 +44,7 @@ const KioskScreen = () => {
         setIsEditMode(true);
       }
     }
-  }, []);
+  }, [refresh]);
 
   const fetchTicketInfoList = async (deptNm) => {
     try {
@@ -75,7 +76,8 @@ const KioskScreen = () => {
       });
     } catch (error) {
       Swal.fire("번호표 발급에 실패했습니다.", "", "info").then(() => {
-        window.location.reload();
+        //window.location.reload();
+        setRefresh((refresh) => refresh * -1);
       });
     }
   };
@@ -87,7 +89,8 @@ const KioskScreen = () => {
   const closePreviewModal = () => {
     setIsPreviewModalOpen(false);
     setPreviewData(null);
-    window.location.reload();
+    //window.location.reload();
+    setRefresh((refresh) => refresh * -1);
   };
 
   const handleLogout = () => {
@@ -111,11 +114,13 @@ const KioskScreen = () => {
       const result = await deleteButton(buttonData);
       Swal.fire("버튼 삭제에 성공했습니다.", "", "info").then(() => {
         setIsPreviewModalOpen(true);
-        window.location.reload();
+        //window.location.reload();
+        setRefresh((refresh) => refresh * -1);
       });
     } catch (error) {
       Swal.fire("버튼 삭제에 실패했습니다.", "", "info").then(() => {
-        window.location.reload();
+        //window.location.reload();
+        setRefresh((refresh) => refresh * -1);
       });
     }
   };
@@ -170,7 +175,8 @@ const KioskScreen = () => {
       Swal.fire("버튼 수정에 성공했습니다.", "", "info").then(() => {
         setActiveEditButton(null);
         setIsModifyingButton(false);
-        window.location.reload();
+        //window.location.reload();
+        setRefresh((refresh) => refresh * -1);
       });
     } catch (error) {
       Swal.fire("버튼 수정에 실패했습니다.", "", "info");
@@ -185,11 +191,13 @@ const KioskScreen = () => {
     try {
       const result = await addButton(buttonData);
       Swal.fire("버튼 추가에 성공했습니다.", "", "info").then(() => {
-        window.location.reload();
+        //window.location.reload();
+        setRefresh((refresh) => refresh * -1);
       });
     } catch (error) {
       Swal.fire("버튼 추가에 실패했습니다.", "", "info").then(() => {
-        window.location.reload();
+        //window.location.reload();
+        setRefresh((refresh) => refresh * -1);
       });
     }
   };
