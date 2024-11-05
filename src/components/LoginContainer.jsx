@@ -2,10 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../api/userApi";
-import InfoSection from "./InfoSection";
 import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
-import AskSection from "./AskSection";
 import * as u from "./UserContainerStyle";
 import Swal from "sweetalert2";
 
@@ -72,8 +70,6 @@ const LoginContainer = ({ closeModal, setIsLoggedIn }) => {
   return (
     <u.Container>
       <u.LeftWrap>
-        <InfoSection title="관리자 로그인" subtitle="" />
-
         <u.Form onSubmit={handleLoginUser}>
           {errorMessage && <u.ErrorMsg>{errorMessage}</u.ErrorMsg>}
           <EmailInput
