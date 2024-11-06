@@ -1,25 +1,46 @@
 .content {
-	max-width: 800px;
+	max-width: 1080px;
 	/* 원하는 최대 너비로 설정 */
 	margin: 0 auto;
 	/* 가운데 정렬 */
 	margin-top: 40px;
 }
 
-.bar-data,
 .line-data,
 .period-data,
 .work-data,
 .time-data,
 .wicket-data,
-.wait-data {
+.line-data,
+.time-data {
 	max-width: 800px;
 	/* 원하는 최대 너비로 설정 */
 	margin: 0 auto;
 	/* 가운데 정렬 */
-	margin-top: 40px;
-	margin-bottom: 50px;
+	margin-top: 10px;
+	margin-bottom: 20px;
 	/* 아래 간격을 넓히기 위해 추가 */
+}
+
+.parent {
+	border: 1px transparent black;
+	margin: 10px;
+	padding: 10px;
+	text-align: center;
+}
+
+
+.bar-data,
+.wait-data,
+.work-data,
+.wicket-data,
+.line-data,
+.time-data {
+	display: inline-block;
+	width: 500px;
+	height: 400px;
+	background-color: white;
+	border: 1px transparent black;
 }
 
 .session-control {
