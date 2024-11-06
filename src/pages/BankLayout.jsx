@@ -11,99 +11,91 @@ const BankLayout = () => {
   const [currentFloor, setCurrentFloor] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [changes, setChanges] = useState({ counters: [], kiosks: [] });
+  const [selectedCounter, setSelectedCounter] = useState(null);
+  const [newCounterName, setNewCounterName] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
-  // 초기 데이터를 가져와 설정하는 함수
   const fetchData = async () => {
-    const res = await getWicketInfoList(deptNm);
-    console.log(res.dataBody);
+    try {
+      const res = await getWicketInfoList(deptNm);
+      const data = res.dataBody;
+      setFloors(data.floors);
+      setCounters(data.layouts.wicketInfo);
+      setKiosks(data.kiosks.kioskInfo);
+      setCurrentFloor(data.floors[0]);
 
-    const data = await new Promise((resolve) => {
-      setTimeout(() => resolve(res.dataBody), 500); // 데이터 로딩 모의
-    });
+      const detailArray = res.dataBody.detail;
+      const wicketInfoList = detailArray.map((item) => {
+        const [x, y, id, num, name, task] = item.split(" ");
+        return {
+          x: Number(x),
+          y: Number(y),
+          id: Number(id),
+          num: Number(num),
+          name: name,
+          task: task,
+        };
+      });
 
-    setFloors(data.floors);
-    setCounters(data.layouts.wicketInfo);
-    setKiosks(data.kiosks.kioskInfo);
-    setCurrentFloor(data.floors[0]); // 첫 번째 층을 기본으로 설정
-
-    const detailArray = res.dataBody.detail; // "detail" 배열
-
-    // detail 배열을 객체 배열로 변환
-    const wicketInfoList = detailArray.map((item) => {
-      const [x, y, id, num, name, task] = item.split(" ");
-      return {
-        x: Number(x),
-        y: Number(y),
-        id: Number(id),
-        num: Number(num),
-        name: name,
-        task: task,
-      };
-    });
-
-    // 변환된 데이터 콘솔 출력 (디버깅용)
-    console.log(wicketInfoList);
+      console.log(wicketInfoList);
+    } catch (error) {
+      console.error("데이터 가져오기 실패", error);
+    }
   };
 
-  // 컴포넌트가 마운트될 때 데이터 가져오기
   useEffect(() => {
     fetchData();
   }, []);
 
-  // 현재 층의 창구 및 키오스크 데이터
   const currentCounters = counters[currentFloor] || {};
   const currentKiosks = kiosks[currentFloor] || [];
+  const gridSize = Object.keys(currentCounters).length + 1;
 
-  // 그리드 크기 계산
-  const gridSize = Object.keys(currentCounters).length + 1; // 창구 개수 + 1
-
-  // 드래그하여 창구를 이동
   const handleDrop = (x, y, counterName) => {
     setCounters((prev) => {
+      // 기존 상태 복사
       const updatedFloorCounters = { ...prev[currentFloor] };
       let fromCoord = null;
+      const counterId = counterName.split(",")[0]; // 아이디만 추출
+      const fullCounterName = counterName; // 전체 counterName을 저장
 
-      // 기존 좌표를 찾는 로직
+      // 기존 좌표에서 창구를 찾고 삭제
       for (const key in updatedFloorCounters) {
-        if (updatedFloorCounters[key] === counterName) {
-          fromCoord = key; // 현재 위치를 저장
-          delete updatedFloorCounters[key]; // 기존 위치 삭제
+        if (updatedFloorCounters[key] === fullCounterName) {
+          fromCoord = key;
+          delete updatedFloorCounters[key]; // 기존 위치에서 창구 삭제
           break;
         }
       }
 
-      // 새 좌표에 창구 추가
-      updatedFloorCounters[`${x},${y}`] = counterName.split(",")[0];
+      // 새로운 좌표에 전체 counterName을 저장
+      updatedFloorCounters[`${x},${y}`] = fullCounterName; // 전체 이름을 저장
 
-      // 상태 변화 저장 (from과 to 좌표를 다르게 설정)
+      // 상태 변경 기록
       if (fromCoord) {
         setChanges((prevChanges) => ({
           ...prevChanges,
           counters: [
             ...prevChanges.counters,
-            { counterName, from: fromCoord, to: `${x},${y}` }, // 실제 from과 to 좌표 기록
+            { counterName: fullCounterName, from: fromCoord, to: `${x},${y}` }, // 전체 이름을 사용
           ],
         }));
       }
 
+      // 상태 반환
       return { ...prev, [currentFloor]: updatedFloorCounters };
     });
   };
 
-  // 드래그하여 키오스크를 이동
   const handleKioskDrop = (x, y, prevCoord) => {
     setKiosks((prev) => {
       const updatedKiosks = { ...prev };
-
-      // 키오스크 위치 변경
       const kiosksOnCurrentFloor = updatedKiosks[currentFloor].filter(
-        (coord) => coord !== prevCoord // 이전 위치 삭제
+        (coord) => coord !== prevCoord
       );
-      kiosksOnCurrentFloor.push(`${x},${y}`); // 새 위치 추가
-
+      kiosksOnCurrentFloor.push(`${x},${y}`);
       updatedKiosks[currentFloor] = kiosksOnCurrentFloor;
 
-      // 상태 변화 저장
       setChanges((prevChanges) => ({
         ...prevChanges,
         kiosks: [...prevChanges.kiosks, { from: prevCoord, to: `${x},${y}` }],
@@ -118,19 +110,82 @@ const BankLayout = () => {
       const response = await sendUpdatedWicketInfoList(changes);
       console.log("변경사항 전송 성공!");
     } catch (error) {
-      console.log("변경사항 전송 실패: ", error);
+      console.error("변경사항 전송 실패: ", error);
     }
   };
 
-  // 편집 모드 전환
   const toggleEditMode = () => {
     if (editMode) {
-      // 편집 모드 종료 시 변경 사항 저장
       console.log("변경된 창구 및 키오스크 정보:", changes);
-      // 서버로 변경 사항 전송
       sendChangesToServer(changes);
     }
-    setEditMode(!editMode); // 편집 모드 상태 전환
+    setEditMode(!editMode);
+  };
+
+  const addCounter = (name, x, y) => {
+    setCounters((prev) => ({
+      ...prev,
+      [currentFloor]: { ...prev[currentFloor], [`${x},${y}`]: name },
+    }));
+  };
+
+  const updateCounter = (coord, newName, newX, newY) => {
+    setCounters((prev) => {
+      const updatedFloorCounters = { ...prev[currentFloor] };
+      delete updatedFloorCounters[coord];
+      updatedFloorCounters[`${newX},${newY}`] = newName;
+      return { ...prev, [currentFloor]: updatedFloorCounters };
+    });
+  };
+
+  const deleteCounter = (coord) => {
+    setCounters((prev) => {
+      const updatedFloorCounters = { ...prev[currentFloor] };
+      delete updatedFloorCounters[coord];
+      return { ...prev, [currentFloor]: updatedFloorCounters };
+    });
+  };
+
+  // 수정 버튼 클릭 후 입력 모드로 전환
+  const handleUpdateCounter = (coord) => {
+    setSelectedCounter(coord);
+    setNewCounterName(currentCounters[coord].split(",")[0]); // 이름만 수정 가능
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    setCounters((prev) => {
+      const updatedFloorCounters = { ...prev[currentFloor] };
+      const currentId = currentCounters[selectedCounter].split(",")[1]; // 아이디 추출
+      updatedFloorCounters[selectedCounter] = `창구 ${newCounterName},${currentId}`; // 수정된 이름과 아이디 결합
+      return { ...prev, [currentFloor]: updatedFloorCounters };
+    });
+    setIsEditing(false);
+  };
+
+  // 취소 버튼 클릭
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
+  // 창구 클릭 시 수정, 삭제 버튼 표시
+  const handleCounterClick = (coord) => {
+    if (editMode) {
+      setSelectedCounter(coord);
+    }
+  };
+
+  const handleNameChange = (e) => {
+    setNewCounterName(e.target.value);
+  };
+
+  const handleDeleteCounter = (coord) => {
+    setCounters((prev) => {
+      const updatedFloorCounters = { ...prev[currentFloor] };
+      delete updatedFloorCounters[coord]; // 선택한 좌표에서 창구 삭제
+      return { ...prev, [currentFloor]: updatedFloorCounters };
+    });
+    setSelectedCounter(null);
   };
 
   return (
@@ -153,7 +208,7 @@ const BankLayout = () => {
             {[...Array(gridSize)].map((_, row) =>
               [...Array(gridSize)].map((_, col) => {
                 const coord = `${row},${col}`;
-                const isKiosk = currentKiosks.includes(coord); // 키오스크 위치 확인
+                const isKiosk = currentKiosks.includes(coord);
                 return (
                   <div
                     key={coord}
@@ -164,10 +219,8 @@ const BankLayout = () => {
                       const kioskCoord = e.dataTransfer.getData("kiosk");
 
                       if (kioskCoord) {
-                        // 키오스크 이동
                         handleKioskDrop(row, col, kioskCoord);
                       } else if (counterName) {
-                        // 창구 이동
                         handleDrop(row, col, counterName);
                       }
                     }}
@@ -189,8 +242,33 @@ const BankLayout = () => {
                           onDragStart={(e) =>
                             e.dataTransfer.setData("counter", currentCounters[coord])
                           }
+                          onClick={() => handleCounterClick(coord)}
                         >
                           {currentCounters[coord].split(",")[0]}
+                          {editMode && selectedCounter === coord && (
+                            <div className="counter-actions">
+                              {editMode && selectedCounter === coord && isEditing && (
+                                <input
+                                  type="text"
+                                  value={newCounterName.split(",")[0].substring(3)}
+                                  onChange={handleNameChange}
+                                  placeholder="새 이름"
+                                />
+                              )}
+                              {editMode && selectedCounter === coord && !isEditing && (
+                                <div className="counter-actions">
+                                  <button onClick={() => handleUpdateCounter(coord)}>수정</button>
+                                  <button onClick={() => handleDeleteCounter(coord)}>삭제</button>
+                                </div>
+                              )}
+                              {editMode && selectedCounter === coord && isEditing && (
+                                <div className="counter-actions">
+                                  <button onClick={handleSave}>저장</button>
+                                  <button onClick={handleCancel}>취소</button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )
                     )}
