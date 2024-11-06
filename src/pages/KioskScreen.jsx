@@ -12,6 +12,7 @@ import {
   addButton,
   modifyButton,
 } from "../api/ticketApi";
+import { logoutUser } from "../api/userApi";
 import Swal from "sweetalert2";
 import PreviewModal from "./PreviewModal";
 import { Cookies } from "react-cookie";
@@ -116,13 +117,17 @@ const KioskScreen = () => {
     setRefresh((refresh) => refresh * -1);
   };
 
-  const handleLogout = () => {
-    // 로그아웃 처리 (localStorage에서 사용자 정보 제거)
-    localStorage.removeItem("isLogIn");
-    localStorage.removeItem("memberInfo");
-    const cookies = new Cookies();
-    cookies.remove("accessToken");
-    setIsLoggedIn(false);
+  const handleLogout = async () => {
+    try {
+      await logoutUser(); // 로그아웃 API 호출
+      localStorage.clear();
+      // 기존 토큰 삭제
+      cookies.remove("accessToken");
+      navigate("/");
+    } catch (error) {
+      console.error("로그아웃 중 오류 발생:", error);
+      // 필요에 따라 사용자에게 오류 메시지를 표시할 수 있음
+    }
     Swal.fire("로그아웃되었습니다.", "", "question").then(() => {
       window.location.reload();
     });
