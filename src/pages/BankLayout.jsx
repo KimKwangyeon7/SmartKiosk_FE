@@ -25,7 +25,7 @@ const BankLayout = () => {
 
   // 초기 데이터를 가져와 설정하는 함수
   const fetchData = async () => {
-    const res = await getWicketInfoList("강남지점");
+    const res = await getWicketInfoList("강남");
     console.log(res.dataBody);
 
     const data = await new Promise((resolve) => {

@@ -41,7 +41,7 @@ ChartJS.register(
   Legend
 );
 
-const deptNm = "강남지점";
+const deptNm = "강남";
 
 const Dashboard = () => {
   const navigate = useNavigate();

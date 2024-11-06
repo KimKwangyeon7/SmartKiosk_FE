@@ -34,7 +34,7 @@ const KioskScreen = () => {
   const [refresh, setRefresh] = useState(1);
 
   const cookies = new Cookies();
-
+  const dept_name = "강남";
   // Remaining time state and idle timer setup
   const [remaining, setRemaining] = useState(null);
   const { getRemainingTime, reset } = useIdleTimer({
@@ -54,7 +54,7 @@ const KioskScreen = () => {
     const loggedIn = localStorage.getItem("isLogIn") === "true";
     setIsLoggedIn(loggedIn);
 
-    const deptNm = "강남지점";
+    const deptNm = dept_name;
     fetchTicketInfoList(deptNm);
 
     if (loggedIn) {
@@ -81,7 +81,7 @@ const KioskScreen = () => {
 
   const handleTicketIssue = async (button) => {
     const ticketData = {
-      dept_nm: "강남지점",
+      dept_nm: dept_name,
       user_dvcd_nm: button.work_dvcd_nm,
     };
 
@@ -135,7 +135,7 @@ const KioskScreen = () => {
 
   const handleDelete = async (button) => {
     const buttonData = {
-      deptNm: "강남지점",
+      deptNm: dept_name,
       workDvcdNm: button.work_dvcd_nm,
     };
     try {
@@ -185,7 +185,7 @@ const KioskScreen = () => {
   const handleSaveModifyButton = (oldButtonName) => {
     if (editButtonName.trim()) {
       const buttonData = {
-        dept_nm: "강남지점",
+        dept_nm: dept_name,
         new_work_dvcd_nm: editButtonName,
         old_work_dvcd_nm: oldButtonName,
       };
@@ -213,7 +213,7 @@ const KioskScreen = () => {
 
   const handleAdd = async (buttonName) => {
     const buttonData = {
-      dept_nm: "강남지점",
+      dept_nm: dept_name,
       work_dvcd_nm: buttonName,
     };
     try {
