@@ -73,7 +73,7 @@ const BankLayout = () => {
       }
 
       // 새 좌표에 창구 추가
-      updatedFloorCounters[`${x},${y}`] = counterName.split(",")[0];
+      updatedFloorCounters[`${x},${y}`] = counterName;
 
       // 상태 변화 저장 (from과 to 좌표를 다르게 설정)
       if (fromCoord) {
@@ -190,7 +190,7 @@ const BankLayout = () => {
                             e.dataTransfer.setData("counter", currentCounters[coord])
                           }
                         >
-                          {currentCounters[coord].split(",")[0]}
+                          {currentCounters[coord]}
                         </div>
                       )
                     )}
