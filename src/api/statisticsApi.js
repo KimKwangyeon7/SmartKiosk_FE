@@ -76,3 +76,25 @@ export const getAvgWaitTime = async (deptNm) => {
       throw new Error("통계 가져오기 실패");
     });
 };
+
+// 최근 5년간 고객 수 변화 - 영업별 => 년도 => 전체와 비교
+export const getYearCnt = async (deptNm) => {
+  return axiosWrapper
+    .post(`/statistics/year?deptNm=${deptNm}`)
+    .then((res) => res.data)
+    .catch((err) => {
+      console.error(err);
+      throw new Error("통계 가져오기 실패");
+    });
+};
+
+// 해당 달의 업무별 고객 수
+export const getMonthCnt = async (data) => {
+  return axiosWrapper
+    .post(`/statistics/month?deptNm=${data.deptNm}&date=${data.date}`)
+    .then((res) => res.data)
+    .catch((err) => {
+      console.error(err);
+      throw new Error("통계 가져오기 실패");
+    });
+};
