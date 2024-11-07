@@ -40,3 +40,12 @@ export const deleteWicket = async (wdId) => {
       console.error(err);
     });
 };
+
+export const updateWicket = async (code) => {
+  return axiosWrapper
+    .patch(`/wicket/info?code=${code}`)
+    .then((res) => res.data)
+    .catch((err) => {
+      console.error(err);
+    });
+};
