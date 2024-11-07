@@ -19,6 +19,24 @@ export const sendUpdatedWicketInfoList = async (data) => {
     .then((res) => res.data)
     .catch((err) => {
       console.error(err);
-      //throw new Error("창구 리스트 정보 가져오기 실패");
+    });
+};
+
+export const createWicket = async (data) => {
+  console.log(data);
+  return axiosWrapper
+    .post("/wicket", data)
+    .then((res) => res.data)
+    .catch((err) => {
+      console.error(err);
+    });
+};
+
+export const deleteWicket = async (wdId) => {
+  return axiosWrapper
+    .delete(`/wicket/${wdId}`)
+    .then((res) => res.data)
+    .catch((err) => {
+      console.error(err);
     });
 };
