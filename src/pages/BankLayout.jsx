@@ -5,8 +5,9 @@ import {
   sendUpdatedWicketInfoList,
   createWicket,
   deleteWicket,
+  updateWicket,
 } from "../api/wicketApi";
-import { async } from "q";
+import { getTicketInfoList } from "../api/ticketApi";
 
 const deptNm = "강남";
 
@@ -21,30 +22,30 @@ const BankLayout = () => {
   const [newCounterName, setNewCounterName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editingCounter, setEditingCounter] = useState(null);
+  const [btnList, setBtnList] = useState([]);
+  const [selectedBtn, setSelectedBtn] = useState(null);
+  const [refresh, setRefresh] = useState(1);
 
   const fetchData = async () => {
     try {
       const res = await getWicketInfoList(deptNm);
       const data = res.dataBody;
+      console.log(data);
       setFloors(data.floors);
       setCounters(data.layouts.wicketInfo);
       setKiosks(data.kiosks.kioskInfo);
       setCurrentFloor(data.floors[0]);
+    } catch (error) {
+      console.error("데이터 가져오기 실패", error);
+    }
+  };
 
-      const detailArray = res.dataBody.detail;
-      const wicketInfoList = detailArray.map((item) => {
-        const [x, y, id, num, name, task] = item.split(" ");
-        return {
-          x: Number(x),
-          y: Number(y),
-          id: Number(id),
-          num: Number(num),
-          name: name,
-          task: task,
-        };
-      });
-
-      console.log(wicketInfoList);
+  const getWorkList = async () => {
+    try {
+      const res = await getTicketInfoList(deptNm);
+      const data = res.dataBody;
+      console.log(data);
+      setBtnList(data);
     } catch (error) {
       console.error("데이터 가져오기 실패", error);
     }
@@ -52,11 +53,13 @@ const BankLayout = () => {
 
   useEffect(() => {
     fetchData();
+    getWorkList();
   }, []);
 
   const currentCounters = counters[currentFloor] || {};
+  console.log(currentCounters);
   const currentKiosks = kiosks[currentFloor] || [];
-  const gridSize = Object.keys(currentCounters).length + 1;
+  const gridSize = 6;
 
   const handleDrop = (x, y, counterName) => {
     setCounters((prev) => {
@@ -129,13 +132,6 @@ const BankLayout = () => {
     setEditMode(!editMode);
   };
 
-  // const addCounter = (name, x, y) => {
-  //   setCounters((prev) => ({
-  //     ...prev,
-  //     [currentFloor]: { ...prev[currentFloor], [`${x},${y}`]: name },
-  //   }));
-  // };
-
   const handleAddCounter = async () => {
     const newCounterName = `창구 `; // 기본 창구 이름
     const initialPosition = `0,0`;
@@ -152,17 +148,20 @@ const BankLayout = () => {
 
   const addCounter = async () => {
     console.log("api 호출 전!");
+    console.log(newCounterName);
     const data = {
       deptNm: deptNm,
-      wdDvcdNm: "일반업무",
-      wdNum: newCounterName.split(" ")[1],
+      wdDvcdNm: selectedBtn,
+      wdNum: newCounterName.split(" ")[1].split(",")[0],
       wdFloor: currentFloor,
     };
     const res = await createWicket(data);
     console.log(res.dataBody);
 
     if (counters[currentFloor] && counters[currentFloor]["0,0"] !== undefined) {
-      counters[currentFloor]["0,0"] = `${newCounterName}, ${res.dataBody}`; // 원하는 값을 넣으세요
+      const nm = newCounterName.split(",")[0];
+      const t = newCounterName.split(",")[1];
+      counters[currentFloor]["0,0"] = `${nm},${res.dataBody},${t}`; // 원하는 값을 넣으세요
     } else {
       console.log("해당 위치에 접근할 수 없습니다.");
     }
@@ -170,28 +169,26 @@ const BankLayout = () => {
     setEditingCounter(null);
   };
 
-  const updateCounter = (coord, newName, newX, newY) => {
-    setCounters((prev) => {
-      const updatedFloorCounters = { ...prev[currentFloor] };
-      delete updatedFloorCounters[coord];
-      updatedFloorCounters[`${newX},${newY}`] = newName;
-      return { ...prev, [currentFloor]: updatedFloorCounters };
-    });
-  };
-
-  const deleteCounter = (coord) => {
-    setCounters((prev) => {
-      const updatedFloorCounters = { ...prev[currentFloor] };
-      delete updatedFloorCounters[coord];
-      return { ...prev, [currentFloor]: updatedFloorCounters };
-    });
+  const getTaskColor = (coord) => {
+    const task = currentCounters[coord].split(",")[2];
+    switch (task) {
+      case "일반업무":
+        return "task-default"; // 기본 색상
+      case "상담업무":
+        return "task-consultation"; // 상담 색상
+      case "대출업무":
+        return "task-service"; // 서비스 색상
+      default:
+        return "task-default"; // 기본 색상
+    }
   };
 
   // 수정 버튼 클릭 후 입력 모드로 전환
   const handleUpdateCounter = (coord) => {
     setSelectedCounter(coord);
-    console.lor(currentCounters[coord]);
+    console.log(currentCounters[coord]);
     setNewCounterName(currentCounters[coord].split(",")[0]); // 이름만 수정 가능
+    setSelectedBtn(currentCounters[coord].split(",")[2]);
     setIsEditing(true);
   };
 
@@ -199,9 +196,23 @@ const BankLayout = () => {
     setCounters((prev) => {
       const updatedFloorCounters = { ...prev[currentFloor] };
       const currentId = currentCounters[selectedCounter].split(",")[1]; // 아이디 추출
-      updatedFloorCounters[selectedCounter] = `창구 ${newCounterName},${currentId}`; // 수정된 이름과 아이디 결합
+      updatedFloorCounters[selectedCounter] = `${
+        newCounterName.split(",")[0]
+      },${currentId},${selectedBtn}`; // 수정된 이름과 아이디 결합
       return { ...prev, [currentFloor]: updatedFloorCounters };
     });
+    const id = counters[currentFloor][selectedCounter].split(",")[1];
+    const code =
+      selectedCounter +
+      " " +
+      newCounterName.split(",")[0] +
+      "," +
+      id +
+      "," +
+      selectedBtn +
+      "," +
+      currentFloor;
+    const res = updateWicket(code);
     setIsEditing(false);
   };
 
@@ -217,19 +228,27 @@ const BankLayout = () => {
     }
   };
 
-  const handleNameChange = (e) => {
-    setNewCounterName(e.target.value);
-  };
-
   const handleDeleteCounter = (coord) => {
     const wdId = counters[currentFloor][coord].split(",")[1];
-    deleteWicket(wdId);
+    deleteWicket(wdId); // DB에서 창구 삭제
+
     setCounters((prev) => {
       const updatedFloorCounters = { ...prev[currentFloor] };
       delete updatedFloorCounters[coord]; // 선택한 좌표에서 창구 삭제
+
+      // 상태 업데이트가 끝난 후, 최신 상태를 리턴
       return { ...prev, [currentFloor]: updatedFloorCounters };
     });
+
+    // 상태 초기화
     setSelectedCounter(null);
+    setIsEditing(false);
+    setEditMode(false); // 상태 변경
+    setNewCounterName("");
+    setEditingCounter(null);
+
+    // 상태 업데이트 이후 console.log는 useEffect 등으로 따로 처리
+    console.log(counters); // 주의: 이 시점에서 console.log는 이전 상태일 수 있음
   };
 
   const handleNameCreate = (e) => {
@@ -251,14 +270,45 @@ const BankLayout = () => {
   const renderCounterNameInput = () => {
     if (editingCounter !== null) {
       return (
-        <input
-          type="text"
-          value={counters[currentFloor][editingCounter] || ""}
-          onChange={handleNameCreate}
-        />
+        <div>
+          <input
+            type="text"
+            value={counters[currentFloor][editingCounter] || ""}
+            onChange={handleNameCreate}
+          />
+          <select
+            value={selectedBtn} // 업무 유형
+            onChange={handleTaskSelectChange} // 업무 유형을 선택할 때 실행되는 함수
+          >
+            {btnList.map((task) => (
+              <option key={task.dept_id} value={task.work_dvcd_nm}>
+                {task.work_dvcd_nm}
+              </option>
+            ))}
+          </select>
+        </div>
       );
     }
     return null;
+  };
+
+  const handleNameChange = (e) => {
+    const val = e.target.value;
+
+    // 숫자만 받도록 정규식 적용 (숫자만 추출)
+    const numericVal = val.replace(/\D/g, ""); // 숫자 이외의 문자는 제거
+
+    // 기존 '창구 '에 숫자만 붙여서 업데이트
+    setNewCounterName(`창구 ${numericVal}`);
+  };
+
+  const handleTaskSelectChange = (e) => {
+    setSelectedBtn(e.target.value);
+    setNewCounterName((prev) => {
+      const parts = prev.split(",");
+      parts[1] = e.target.value; // 선택한 업무 종류로 업데이트
+      return parts.join(",");
+    });
   };
 
   return (
@@ -295,6 +345,7 @@ const BankLayout = () => {
                     onDrop={(e) => {
                       e.preventDefault();
                       const counterName = e.dataTransfer.getData("counter");
+                      console.log(counterName);
                       const kioskCoord = e.dataTransfer.getData("kiosk");
 
                       if (kioskCoord) {
@@ -316,7 +367,7 @@ const BankLayout = () => {
                     ) : (
                       currentCounters[coord] && (
                         <div
-                          className="counter"
+                          className={`counter ${getTaskColor(coord)}`} // task 색상 클래스 적용
                           draggable={editMode}
                           onDragStart={(e) =>
                             e.dataTransfer.setData("counter", currentCounters[coord])
@@ -327,13 +378,26 @@ const BankLayout = () => {
                           {editMode && selectedCounter === coord && (
                             <div className="counter-actions">
                               {editMode && selectedCounter === coord && isEditing && (
-                                <input
-                                  type="text"
-                                  value={newCounterName.split(",")[0].substring(3)}
-                                  onChange={handleNameChange}
-                                  placeholder="새 이름"
-                                />
+                                <>
+                                  <input
+                                    type="text"
+                                    value={newCounterName.split(",")[0].substring(3)}
+                                    onChange={handleNameChange}
+                                    placeholder="새 이름"
+                                  />
+                                  <select
+                                    value={selectedBtn} // 선택된 업무 종류 표시
+                                    onChange={handleTaskSelectChange}
+                                  >
+                                    {btnList.map((task) => (
+                                      <option key={task.dept_id} value={task.work_dvcd_nm}>
+                                        {task.work_dvcd_nm}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </>
                               )}
+
                               {editMode && selectedCounter === coord && !isEditing && (
                                 <div className="counter-actions">
                                   <button onClick={() => handleUpdateCounter(coord)}>수정</button>
