@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import "./BankLayout.css";
-import { getWicketInfoList, sendUpdatedWicketInfoList } from "../api/wicketApi";
+import {
+  getWicketInfoList,
+  sendUpdatedWicketInfoList,
+  createWicket,
+  deleteWicket,
+} from "../api/wicketApi";
+import { async } from "q";
 
 const deptNm = "강남";
 
@@ -14,6 +20,7 @@ const BankLayout = () => {
   const [selectedCounter, setSelectedCounter] = useState(null);
   const [newCounterName, setNewCounterName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [editingCounter, setEditingCounter] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -122,11 +129,45 @@ const BankLayout = () => {
     setEditMode(!editMode);
   };
 
-  const addCounter = (name, x, y) => {
-    setCounters((prev) => ({
-      ...prev,
-      [currentFloor]: { ...prev[currentFloor], [`${x},${y}`]: name },
-    }));
+  // const addCounter = (name, x, y) => {
+  //   setCounters((prev) => ({
+  //     ...prev,
+  //     [currentFloor]: { ...prev[currentFloor], [`${x},${y}`]: name },
+  //   }));
+  // };
+
+  const handleAddCounter = async () => {
+    const newCounterName = `창구 `; // 기본 창구 이름
+    const initialPosition = `0,0`;
+
+    setCounters((prev) => {
+      const updatedFloorCounters = { ...prev[currentFloor], [initialPosition]: newCounterName };
+      return { ...prev, [currentFloor]: updatedFloorCounters };
+    });
+    console.log(counters);
+
+    // 새로운 창구를 추가 후, 이름 편집 모드 활성화
+    setEditingCounter(initialPosition);
+  };
+
+  const addCounter = async () => {
+    console.log("api 호출 전!");
+    const data = {
+      deptNm: deptNm,
+      wdDvcdNm: "일반업무",
+      wdNum: newCounterName.split(" ")[1],
+      wdFloor: currentFloor,
+    };
+    const res = await createWicket(data);
+    console.log(res.dataBody);
+
+    if (counters[currentFloor] && counters[currentFloor]["0,0"] !== undefined) {
+      counters[currentFloor]["0,0"] = `${newCounterName}, ${res.dataBody}`; // 원하는 값을 넣으세요
+    } else {
+      console.log("해당 위치에 접근할 수 없습니다.");
+    }
+    setNewCounterName("");
+    setEditingCounter(null);
   };
 
   const updateCounter = (coord, newName, newX, newY) => {
@@ -149,6 +190,7 @@ const BankLayout = () => {
   // 수정 버튼 클릭 후 입력 모드로 전환
   const handleUpdateCounter = (coord) => {
     setSelectedCounter(coord);
+    console.lor(currentCounters[coord]);
     setNewCounterName(currentCounters[coord].split(",")[0]); // 이름만 수정 가능
     setIsEditing(true);
   };
@@ -180,12 +222,43 @@ const BankLayout = () => {
   };
 
   const handleDeleteCounter = (coord) => {
+    const wdId = counters[currentFloor][coord].split(",")[1];
+    deleteWicket(wdId);
     setCounters((prev) => {
       const updatedFloorCounters = { ...prev[currentFloor] };
       delete updatedFloorCounters[coord]; // 선택한 좌표에서 창구 삭제
       return { ...prev, [currentFloor]: updatedFloorCounters };
     });
     setSelectedCounter(null);
+  };
+
+  const handleNameCreate = (e) => {
+    const newName = e.target.value;
+    console.log(newName);
+    setCounters((prev) => {
+      const updatedFloorCounters = { ...prev[currentFloor], [editingCounter]: newName };
+      console.log(updatedFloorCounters);
+
+      return { ...prev, [currentFloor]: updatedFloorCounters };
+    });
+    setNewCounterName(newName);
+  };
+
+  const cancelCreate = () => {
+    setEditingCounter(null);
+  };
+
+  const renderCounterNameInput = () => {
+    if (editingCounter !== null) {
+      return (
+        <input
+          type="text"
+          value={counters[currentFloor][editingCounter] || ""}
+          onChange={handleNameCreate}
+        />
+      );
+    }
+    return null;
   };
 
   return (
@@ -201,6 +274,12 @@ const BankLayout = () => {
         <>
           <h3>{currentFloor}층 창구 배치도</h3>
           <button onClick={toggleEditMode}>{editMode ? "완료" : "편집"}</button>
+          <div>
+            {editingCounter === null && <button onClick={handleAddCounter}>창구 생성</button>}
+            {editingCounter !== null && <button onClick={addCounter}>저장</button>}
+            {editingCounter !== null && <button onClick={cancelCreate}>취소</button>}
+            {renderCounterNameInput()}
+          </div>
           <div
             className="grid-container"
             style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)` }}
