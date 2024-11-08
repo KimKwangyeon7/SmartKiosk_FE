@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./BankLayout.css";
 import {
   getWicketInfoList,
@@ -6,6 +6,9 @@ import {
   createWicket,
   deleteWicket,
   updateWicket,
+  deleteFloor,
+  moveWicket,
+  moveKiosk,
 } from "../api/wicketApi";
 import { getTicketInfoList } from "../api/ticketApi";
 
@@ -24,7 +27,7 @@ const BankLayout = () => {
   const [editingCounter, setEditingCounter] = useState(null);
   const [btnList, setBtnList] = useState([]);
   const [selectedBtn, setSelectedBtn] = useState(null);
-  const [refresh, setRefresh] = useState(1);
+  const containerRef = useRef(null);
 
   const fetchData = async () => {
     try {
@@ -54,6 +57,9 @@ const BankLayout = () => {
   useEffect(() => {
     fetchData();
     getWorkList();
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
   }, []);
 
   const currentCounters = counters[currentFloor] || {};
@@ -87,9 +93,17 @@ const BankLayout = () => {
           ...prevChanges,
           counters: [
             ...prevChanges.counters,
-            { counterName: fullCounterName, from: fromCoord, to: `${x},${y}` }, // 전체 이름을 사용
+            { counterName: fullCounterName, from: fromCoord, to: `${x},${y}`, floor: currentFloor }, // 전체 이름을 사용
           ],
         }));
+
+        const data = {
+          counterName: fullCounterName,
+          from: fromCoord,
+          to: `${x},${y}`,
+          floor: currentFloor,
+        };
+        const res = moveWicket(data);
       }
 
       // 상태 반환
@@ -111,39 +125,84 @@ const BankLayout = () => {
         kiosks: [...prevChanges.kiosks, { from: prevCoord, to: `${x},${y}` }],
       }));
 
+      const data = {
+        from: prevCoord,
+        to: `${x},${y}`,
+      };
+      moveKiosk(data);
       return updatedKiosks;
     });
   };
 
-  const sendChangesToServer = async (changes) => {
-    try {
-      const response = await sendUpdatedWicketInfoList(changes);
-      console.log("변경사항 전송 성공!");
-    } catch (error) {
-      console.error("변경사항 전송 실패: ", error);
-    }
-  };
+  // const sendChangesToServer = async (changes) => {
+  //   try {
+  //     const response = await sendUpdatedWicketInfoList(changes);
+  //     console.log("변경사항 전송 성공!");
+  //   } catch (error) {
+  //     console.error("변경사항 전송 실패: ", error);
+  //   }
+  // };
 
   const toggleEditMode = () => {
     if (editMode) {
-      console.log("변경된 창구 및 키오스크 정보:", changes);
-      sendChangesToServer(changes);
+      // 편집 모드를 비활성화하는 경우, 변경된 내용을 서버에 전송
+      //console.log("변경된 창구 및 키오스크 정보:", changes);
+      //sendChangesToServer(changes); // 서버에 변경 사항 전송
+      setChanges({ counters: [], kiosks: [] }); // 변경 기록 초기화
     }
-    setEditMode(!editMode);
+    setEditMode((prevEditMode) => !prevEditMode); // 편집 모드 토글
   };
 
   const handleAddCounter = async () => {
-    const newCounterName = `창구 `; // 기본 창구 이름
-    const initialPosition = `0,0`;
+    const newCounterIndex = Object.keys(counters[currentFloor] || {}).length + 1; // 창구 수 + 1
+    const newCounterName = `창구 ${newCounterIndex}`;
+    const defaultTask = btnList[0]?.work_dvcd_nm || ""; // 업무 리스트 첫 번째 항목
 
-    setCounters((prev) => {
-      const updatedFloorCounters = { ...prev[currentFloor], [initialPosition]: newCounterName };
-      return { ...prev, [currentFloor]: updatedFloorCounters };
-    });
-    console.log(counters);
+    // 창구의 초기 좌표를 (0, 0)부터 시작
+    let newX = 0;
+    let newY = 0;
 
-    // 새로운 창구를 추가 후, 이름 편집 모드 활성화
-    setEditingCounter(initialPosition);
+    // 현재 층에서 이미 존재하는 좌표들을 확인하여 중복되지 않는 좌표를 찾기
+    const existingCoordinates = Object.keys(counters[currentFloor] || {});
+    let foundEmptySpot = false;
+
+    while (!foundEmptySpot) {
+      const coord = `${newX},${newY}`;
+      if (!existingCoordinates.includes(coord)) {
+        foundEmptySpot = true;
+      } else {
+        if (newY < 5) {
+          newY++;
+        } else {
+          newY = 0;
+          newX++;
+        }
+      }
+    }
+
+    // DB에 새로운 창구 추가 요청
+    try {
+      const data = {
+        deptNm: deptNm,
+        wdDvcdNm: defaultTask,
+        wdNum: newCounterIndex,
+        wdFloor: currentFloor,
+      };
+      const res = await createWicket(data); // 서버에 창구 생성 요청
+
+      // 서버에서 생성된 창구 ID를 받아와 상태에 업데이트
+      const newCounterId = res.dataBody; // 서버가 반환한 ID를 사용
+      setCounters((prev) => ({
+        ...prev,
+        [currentFloor]: {
+          ...prev[currentFloor],
+          [`${newX},${newY}`]: `${newCounterName},${newCounterId},${defaultTask}`,
+        },
+      }));
+    } catch (error) {
+      console.error("창구 생성 실패: ", error);
+      alert("창구 생성에 실패했습니다.");
+    }
   };
 
   const addCounter = async () => {
@@ -169,27 +228,47 @@ const BankLayout = () => {
     setEditingCounter(null);
   };
 
+  // `getTaskColor` 함수
   const getTaskColor = (coord) => {
-    const task = currentCounters[coord].split(",")[2];
-    switch (task) {
-      case "일반업무":
-        return "task-default"; // 기본 색상
-      case "상담업무":
-        return "task-consultation"; // 상담 색상
-      case "대출업무":
-        return "task-service"; // 서비스 색상
+    const taskName = currentCounters[coord].split(",")[2];
+    const task = btnList.find((item) => item.work_dvcd_nm === taskName);
+
+    if (!task) return "rgba(0, 0, 0, 0.1)"; // 기본 연한 회색 (task가 없는 경우)
+
+    switch (task.color) {
+      case 1:
+        return "rgba(255, 0, 0, 0.3)"; // 연한 빨강
+      case 2:
+        return "rgba(255, 165, 0, 0.3)"; // 연한 주황
+      case 3:
+        return "rgba(255, 255, 0, 0.3)"; // 연한 노랑
+      case 4:
+        return "rgba(0, 0, 255, 0.3)"; // 연한 파랑
       default:
-        return "task-default"; // 기본 색상
+        return "rgba(0, 0, 0, 0.1)"; // 기본 연한 회색
     }
   };
 
-  // 수정 버튼 클릭 후 입력 모드로 전환
-  const handleUpdateCounter = (coord) => {
+  // 수정 버튼 클릭
+  // const handleUpdateCounter = (coord, e) => {
+  //   e.stopPropagation(); // 이벤트 전파 방지
+  //   setSelectedCounter(coord); // 선택된 창구 설정
+  //   setNewCounterName(currentCounters[coord].split(",")[0]); // 이름만 수정 가능
+  //   setSelectedBtn(currentCounters[coord].split(",")[2]);
+  //   setIsEditing(true);
+  // };
+
+  const handleUpdateCounter = (coord, e) => {
+    e.stopPropagation();
     setSelectedCounter(coord);
-    console.log(currentCounters[coord]);
-    setNewCounterName(currentCounters[coord].split(",")[0]); // 이름만 수정 가능
-    setSelectedBtn(currentCounters[coord].split(",")[2]);
     setIsEditing(true);
+    document.addEventListener("mousedown", handleOutsideClick);
+  };
+
+  const handleOutsideClick = (e) => {
+    if (containerRef.current && !containerRef.current.contains(e.target)) {
+      handleSave();
+    }
   };
 
   const handleSave = () => {
@@ -201,6 +280,7 @@ const BankLayout = () => {
       },${currentId},${selectedBtn}`; // 수정된 이름과 아이디 결합
       return { ...prev, [currentFloor]: updatedFloorCounters };
     });
+
     const id = counters[currentFloor][selectedCounter].split(",")[1];
     const code =
       selectedCounter +
@@ -212,8 +292,11 @@ const BankLayout = () => {
       selectedBtn +
       "," +
       currentFloor;
-    const res = updateWicket(code);
+
+    updateWicket(code);
     setIsEditing(false);
+    setSelectedCounter(null);
+    document.removeEventListener("mousedown", handleOutsideClick);
   };
 
   // 취소 버튼 클릭
@@ -224,31 +307,30 @@ const BankLayout = () => {
   // 창구 클릭 시 수정, 삭제 버튼 표시
   const handleCounterClick = (coord) => {
     if (editMode) {
-      setSelectedCounter(coord);
+      // 이미 선택된 창구를 다시 클릭할 경우 선택 해제
+      if (selectedCounter === coord) {
+        setSelectedCounter(null); // 선택 해제
+      } else {
+        setSelectedCounter(coord); // 선택된 창구 설정
+      }
     }
   };
 
-  const handleDeleteCounter = (coord) => {
+  // 삭제 버튼 클릭
+  const handleDeleteCounter = (coord, e) => {
+    e.stopPropagation(); // 이벤트 전파 방지
     const wdId = counters[currentFloor][coord].split(",")[1];
     deleteWicket(wdId); // DB에서 창구 삭제
-
     setCounters((prev) => {
       const updatedFloorCounters = { ...prev[currentFloor] };
       delete updatedFloorCounters[coord]; // 선택한 좌표에서 창구 삭제
-
-      // 상태 업데이트가 끝난 후, 최신 상태를 리턴
       return { ...prev, [currentFloor]: updatedFloorCounters };
     });
-
     // 상태 초기화
     setSelectedCounter(null);
     setIsEditing(false);
-    setEditMode(false); // 상태 변경
     setNewCounterName("");
     setEditingCounter(null);
-
-    // 상태 업데이트 이후 console.log는 useEffect 등으로 따로 처리
-    console.log(counters); // 주의: 이 시점에서 console.log는 이전 상태일 수 있음
   };
 
   const handleNameCreate = (e) => {
@@ -265,6 +347,27 @@ const BankLayout = () => {
 
   const cancelCreate = () => {
     setEditingCounter(null);
+  };
+
+  const addFloor = () => {
+    const newFloor = `${floors.length + 1}`;
+    setFloors((prevFloors) => [...prevFloors, newFloor]);
+    setCurrentFloor(newFloor);
+  };
+
+  const removeFloor = async () => {
+    if (currentFloor) {
+      try {
+        // 서버에 현재 층 삭제 요청 전송
+        await deleteFloor(currentFloor);
+        console.log(`층 ${currentFloor} 정보가 서버에 전달되었습니다.`);
+
+        // 최신 데이터를 서버에서 다시 가져와 상태 업데이트
+        fetchData(); // 최신 층 데이터와 상태를 갱신하는 함수 호출
+      } catch (error) {
+        console.error("층 삭제 중 오류가 발생했습니다.", error);
+      }
+    }
   };
 
   const renderCounterNameInput = () => {
@@ -312,27 +415,127 @@ const BankLayout = () => {
   };
 
   return (
-    <div>
-      <div>
-        {floors.map((floor) => (
-          <button key={floor} onClick={() => setCurrentFloor(floor)}>
-            {floor}층
-          </button>
-        ))}
-      </div>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        width: "100%",
+        height: "100vh",
+      }}
+    >
       {currentFloor && (
         <>
-          <h3>{currentFloor}층 창구 배치도</h3>
-          <button onClick={toggleEditMode}>{editMode ? "완료" : "편집"}</button>
-          <div>
-            {editingCounter === null && <button onClick={handleAddCounter}>창구 생성</button>}
-            {editingCounter !== null && <button onClick={addCounter}>저장</button>}
-            {editingCounter !== null && <button onClick={cancelCreate}>취소</button>}
-            {renderCounterNameInput()}
+          <h1>{currentFloor}층 창구 배치도</h1>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              width: "90%", // 부모 컨테이너의 전체 너비 사용
+              height: "10%",
+              padding: "10px 0",
+            }}
+          >
+            {/* 토글 스위치 */}
+            <div
+              className={`toggle-switch ${editMode ? "active" : ""}`}
+              onClick={toggleEditMode}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                width: "120px",
+                height: "40px",
+                padding: "5px",
+                backgroundColor: editMode ? "lightblue" : "lightgray",
+                borderRadius: "20px",
+                cursor: "pointer",
+                position: "relative",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: editMode ? "10px" : "auto",
+                  right: editMode ? "auto" : "10px",
+                  transform: "translateY(-50%)",
+                  color: "white",
+                  fontSize: "14px",
+                  fontWeight: "bold",
+                }}
+              >
+                {editMode ? "편집 모드" : "일반 모드"}
+              </div>
+              <div
+                className="toggle-circle"
+                style={{
+                  width: "45px",
+                  height: "45px",
+                  backgroundColor: "white",
+                  borderRadius: "50%",
+                  transition: "transform 0.3s",
+                  transform: editMode ? "translateX(60px)" : "translateX(0)",
+                  zIndex: 1,
+                }}
+              />
+            </div>
+
+            {/* 편집 모드 전용 버튼 */}
+            {editMode && (
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button
+                  onClick={handleAddCounter}
+                  style={{ padding: "5px 10px", cursor: "pointer" }}
+                >
+                  창구 생성
+                </button>
+
+                <button
+                  onClick={addFloor}
+                  className="add-floor-button"
+                  style={{
+                    padding: "5px 10px",
+                    fontSize: "18px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                  }}
+                >
+                  층 추가
+                </button>
+
+                <button
+                  onClick={removeFloor}
+                  className="delete-floor-button"
+                  style={{
+                    padding: "5px 10px",
+                    fontSize: "18px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    color: "red",
+                  }}
+                >
+                  층 삭제
+                </button>
+              </div>
+            )}
           </div>
+
+          {editingCounter !== null && <button onClick={addCounter}>저장</button>}
+          {editingCounter !== null && <button onClick={cancelCreate}>취소</button>}
+          {renderCounterNameInput()}
+
           <div
             className="grid-container"
-            style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)` }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
+              width: "95%", // 화면 너비의 90%
+              height: "80%", // 화면 높이의 60%
+              backgroundColor: "#f0f0f0", // 배경색으로 영역 구분
+              marginBottom: "20px",
+              gap: "5px", // 그리드 아이템 간격
+            }}
           >
             {[...Array(gridSize)].map((_, row) =>
               [...Array(gridSize)].map((_, col) => {
@@ -345,7 +548,6 @@ const BankLayout = () => {
                     onDrop={(e) => {
                       e.preventDefault();
                       const counterName = e.dataTransfer.getData("counter");
-                      console.log(counterName);
                       const kioskCoord = e.dataTransfer.getData("kiosk");
 
                       if (kioskCoord) {
@@ -367,48 +569,73 @@ const BankLayout = () => {
                     ) : (
                       currentCounters[coord] && (
                         <div
-                          className={`counter ${getTaskColor(coord)}`} // task 색상 클래스 적용
+                          className="counter"
+                          style={{ backgroundColor: getTaskColor(coord) }} // 배경색 설정
                           draggable={editMode}
                           onDragStart={(e) =>
                             e.dataTransfer.setData("counter", currentCounters[coord])
                           }
                           onClick={() => handleCounterClick(coord)}
                         >
-                          {currentCounters[coord].split(",")[0]}
+                          {editMode && selectedCounter === coord && isEditing ? (
+                            <>
+                              {/* 창구 이름을 텍스트 박스로 표시 */}
+                              <input
+                                type="text"
+                                value={newCounterName.split(",")[0].substring(3)}
+                                onChange={handleNameChange}
+                                placeholder={newCounterName.split(",")[0]}
+                                style={{
+                                  width: "80px", // 너비 조정
+                                  fontSize: "12px", // 글자 크기 조정
+                                  padding: "2px", // 안쪽 여백 조정
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+
+                              {/* 업무 종류를 셀렉트 박스로 표시 */}
+                              <select
+                                value={selectedBtn}
+                                onChange={handleTaskSelectChange}
+                                style={{
+                                  width: "80px", // 너비 조정
+                                  fontSize: "12px", // 글자 크기 조정
+                                  padding: "2px", // 안쪽 여백 조정
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {btnList.map((task) => (
+                                  <option key={task.dept_id} value={task.work_dvcd_nm}>
+                                    {task.work_dvcd_nm}
+                                  </option>
+                                ))}
+                              </select>
+                            </>
+                          ) : (
+                            <>
+                              {/* 창구 이름과 업무 종류 표시 */}
+                              <div>{currentCounters[coord].split(",")[0]}</div>
+                              <div style={{ fontSize: "smaller", color: "gray" }}>
+                                {currentCounters[coord].split(",")[2]}
+                              </div>
+                            </>
+                          )}
                           {editMode && selectedCounter === coord && (
                             <div className="counter-actions">
-                              {editMode && selectedCounter === coord && isEditing && (
+                              {isEditing ? (
                                 <>
-                                  <input
-                                    type="text"
-                                    value={newCounterName.split(",")[0].substring(3)}
-                                    onChange={handleNameChange}
-                                    placeholder="새 이름"
-                                  />
-                                  <select
-                                    value={selectedBtn} // 선택된 업무 종류 표시
-                                    onChange={handleTaskSelectChange}
-                                  >
-                                    {btnList.map((task) => (
-                                      <option key={task.dept_id} value={task.work_dvcd_nm}>
-                                        {task.work_dvcd_nm}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </>
-                              )}
-
-                              {editMode && selectedCounter === coord && !isEditing && (
-                                <div className="counter-actions">
-                                  <button onClick={() => handleUpdateCounter(coord)}>수정</button>
-                                  <button onClick={() => handleDeleteCounter(coord)}>삭제</button>
-                                </div>
-                              )}
-                              {editMode && selectedCounter === coord && isEditing && (
-                                <div className="counter-actions">
                                   <button onClick={handleSave}>저장</button>
                                   <button onClick={handleCancel}>취소</button>
-                                </div>
+                                </>
+                              ) : (
+                                <>
+                                  <button onClick={(e) => handleUpdateCounter(coord, e)}>
+                                    수정
+                                  </button>
+                                  <button onClick={(e) => handleDeleteCounter(coord, e)}>
+                                    삭제
+                                  </button>
+                                </>
                               )}
                             </div>
                           )}
@@ -419,6 +646,25 @@ const BankLayout = () => {
                 );
               })
             )}
+          </div>
+          {/* 층 목록 - 중앙 정렬 */}
+          <div
+            className="floor-container"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              width: "90%", // 화면 너비의 90%
+              height: "10%", // 화면 높이의 10%
+              backgroundColor: "#f8f8f8",
+            }}
+          >
+            {floors.map((floor) => (
+              <div key={floor} className="floor-item" style={{ margin: "0 5px" }}>
+                <button onClick={() => setCurrentFloor(floor)} className="floor-button">
+                  {floor}층
+                </button>
+              </div>
+            ))}
           </div>
         </>
       )}

@@ -1,94 +1,198 @@
+/* 그리드 크기 조정 */
 .grid-container {
 	display: grid;
-	gap: 5px;
-}
-
-.grid-item {
+	grid-template-columns: repeat(6, 1fr);
+	gap: 10px;
+	/* 그리드 항목 간의 간격 */
 	width: 100%;
-	height: 100px;
-	border: 1px solid transparent;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: border 0.2s ease-in-out;
+	height: 80vh;
 }
 
-.grid-item.edit-mode {
-	border: 2px dashed #aaa;
-	/* 편집 모드에서 점선 테두리 */
-}
-
-.kiosk {
-	background-color: #ffa500;
-	color: white;
-	padding: 5px;
-	border-radius: 4px;
-	font-weight: bold;
-}
-
-.counter {
-	padding: 5px;
-	background-color: #4bc0c0;
-	color: white;
-	border-radius: 4px;
-}
-
-.footer {
-	margin-top: 20px;
-	padding: 10px;
-	background-color: #f8f8f8;
-	border-top: 1px solid #ccc;
-}
-
-.footer h4 {
-	margin-bottom: 10px;
-}
-
-.footer ul {
-	list-style-type: none;
-	padding: 0;
-}
-
-.footer li {
-	margin-bottom: 5px;
-}
-
-/* task별 색상 클래스 */
-.task-default {
-	background-color: lightblue;
-	/* 일반업무 색 */
-}
-
-.task-consultation {
-	background-color: lightgreen;
-	/* 상담 색 */
-}
-
-.task-service {
-	background-color: lightcoral;
-	/* 서비스 색 */
-}
-
-.counter {
-	padding: 10px;
-	text-align: center;
-	border-radius: 5px;
-}
-
+/* 그리드 항목 */
 .grid-item {
-	border: 1px solid #ccc;
-	margin: 5px;
-	height: 50px;
+	background-color: lightgray;
 	display: flex;
-	align-items: center;
 	justify-content: center;
+	align-items: center;
+	font-size: 3vw;
+	border-radius: 5px;
+	transition: all 0.3s;
 }
 
-.edit-mode {
-	border: 2px dashed red;
+/* 창구와 키오스크의 크기를 그리드 크기와 동일하게 설정 */
+.counter,
+.kiosk {
+	font-size: 2vw;
+	padding: 10px;
+	border-radius: 5px;
+	background-color: rgba(0, 0, 0, 0.1);
+	color: white;
+	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.3s;
+	width: 95%;
+	/* 그리드 항목 크기와 동일하게 설정 */
+	height: 85%;
+	/* 그리드 항목 크기와 동일하게 설정 */
+}
+
+/* 선택된 창구의 크기 및 색상 조정 (클릭 시 조금 커짐) */
+.counter.selected {
+	width: 95%;
+	height: 85%;
+	background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* 편집 모드에서 선택된 창구 크기 및 색상 조정 */
+.counter.editing {
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* 편집 모드에서 버튼 크기 키우기 */
+button {
+	font-size: 2.5vw;
+	cursor: pointer;
+}
+
+/* 창구 이름 입력 박스 */
+input[type="text"] {
+	font-size: 2vw;
+	padding: 10px;
+	margin-top: 10px;
+	width: 70%;
+}
+
+/* 업무 유형 선택 박스 */
+select {
+	font-size: 2vw;
+	padding: 10px;
+	margin-top: 10px;
+	width: 70%;
 }
 
 .counter-actions {
 	display: flex;
-	justify-content: space-around;
+	justify-content: space-evenly;
+	width: 100%;
+	font-size: 1.5vw;
+	gap: 5px;
+	margin-top: 10px;
+}
+
+/* 작업 버튼 */
+.counter-actions button {
+	font-size: 1.5vw;
+	/* 버튼 글자 크기를 작게 설정 */
+	padding: 5px 10px;
+	/* 버튼의 크기를 작게 조정 */
+	cursor: pointer;
+	border-radius: 4px;
+	transition: background-color 0.3s;
+	white-space: nowrap;
+	/* 버튼 글자를 가로로 정렬 */
+	;
+}
+
+/* Toggle switch container */
+.toggle-switch {
+	position: relative;
+	width: 50px;
+	height: 25px;
+	background-color: #ccc;
+	border-radius: 15px;
+	cursor: pointer;
+	transition: background-color 0.3s;
+}
+
+.toggle-switch.active {
+	background-color: #4b9cd3;
+}
+
+/* Toggle circle */
+.toggle-circle {
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 21px;
+	height: 21px;
+	background-color: white;
+	border-radius: 50%;
+	transition: left 0.3s;
+}
+
+.toggle-switch.active .toggle-circle {
+	left: 25px;
+}
+
+/* 층 버튼들 스타일 */
+.floor-buttons {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 20px;
+	align-items: center;
+}
+
+.floor-button {
+	background-color: #f0f0f0;
+	color: #333;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	padding: 6px 12px;
+	cursor: pointer;
+	transition: background-color 0.3s;
+	align-items: center;
+}
+
+.floor-button:hover {
+	background-color: #e0e0e0;
+}
+
+.floor-button.active {
+	background-color: #4b9cd3;
+	color: white;
+}
+
+/* 층 생성/삭제 버튼 스타일 */
+.floor-control-button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	font-size: 20px;
+	color: #4b9cd3;
+	border: 1px solid #4b9cd3;
+	background-color: #f9f9f9;
+	border-radius: 50%;
+	cursor: pointer;
+	transition: background-color 0.3s, color 0.3s;
+	margin-left: 5px;
+}
+
+.floor-control-button:hover {
+	background-color: #4b9cd3;
+	color: white;
+}
+
+.counter-actions button:nth-child(1) {
+	background-color: rgba(144, 238, 144, 0.3);
+	/* 연한 초록색 */
+	color: #2e7d32;
+	/* 초록색 텍스트 */
+	border: 1px solid rgba(46, 125, 50, 0.3);
+	/* 연한 초록색 테두리 */
+}
+
+.counter-actions button:nth-child(2) {
+	background-color: rgba(255, 99, 71, 0.3);
+	/* 연한 빨간색 */
+	color: #c62828;
+	/* 빨간색 텍스트 */
+	border: 1px solid rgba(198, 40, 40, 0.3);
+	/* 연한 빨간색 테두리 */
 }
