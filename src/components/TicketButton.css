@@ -1,0 +1,94 @@
+.ticket-button {
+	position: relative;
+	display: inline-block;
+	transition: all 0.2s ease-in-out;
+}
+
+.service-button {
+	font-size: 1.2vw;
+	padding: 10px;
+	width: 100%;
+	height: 100%;
+	cursor: pointer;
+	background-color: #ffffff;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	text-align: center;
+	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+	transition: background-color 0.3s;
+}
+
+.service-button:hover {
+	background-color: #e0e0e0;
+}
+
+.waiting-info {
+	font-size: 0.9em;
+	color: #666;
+	margin-top: 5px;
+}
+
+.edit-buttons {
+	display: flex;
+	gap: 5px;
+	margin-top: 5px;
+}
+
+.edit-button,
+.delete-button {
+	padding: 5px 10px;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	color: #fff;
+	font-size: 0.8em;
+	font-weight: bold;
+}
+
+.edit-button {
+	background-color: #4CAF50;
+	/* Green */
+}
+
+.delete-button {
+	background-color: #FF4C4C;
+	/* Red */
+}
+
+.edit-button:hover,
+.delete-button:hover {
+	opacity: 0.9;
+}
+
+.resize-handle {
+	width: 10px;
+	height: 10px;
+	background-color: gray;
+	position: absolute;
+	cursor: se-resize;
+	display: block;
+}
+
+.resize-handle.top-left {
+	top: -5px;
+	left: -5px;
+	cursor: nw-resize;
+}
+
+.resize-handle.top-right {
+	top: -5px;
+	right: -5px;
+	cursor: ne-resize;
+}
+
+.resize-handle.bottom-left {
+	bottom: -5px;
+	left: -5px;
+	cursor: sw-resize;
+}
+
+.resize-handle.bottom-right {
+	bottom: -5px;
+	right: -5px;
+	cursor: se-resize;
+}

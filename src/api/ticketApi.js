@@ -51,3 +51,13 @@ export const deleteButton = async (data) => {
       console.error(err);
     });
 };
+
+// 번호표 좌표 수정
+export const modifyButtonLoc = async (deptNm, data) => {
+  return axiosWrapper
+    .patch(`/member/button/loc?deptNm=${deptNm}`, data)
+    .then((res) => res.data)
+    .catch((err) => {
+      console.error(err);
+    });
+};
