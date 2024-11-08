@@ -32,6 +32,7 @@ const KioskScreen = () => {
   const [isAddingButton, setIsAddingButton] = useState(false);
   const [isModifyingButton, setIsModifyingButton] = useState(false);
   const [refresh, setRefresh] = useState(1);
+  const [isDragMode, setIsDragMode] = useState(false);
 
   const cookies = new Cookies();
   const dept_name = "강남";
@@ -73,27 +74,61 @@ const KioskScreen = () => {
   const fetchTicketInfoList = async (deptNm) => {
     try {
       const ticketList = await getTicketInfoList(deptNm);
-      setTicketInfoList(ticketList.dataBody);
+      setTicketInfoList(
+        ticketList.dataBody.map((item) => ({
+          ...item,
+          top: parseInt(item.left_high.split(",")[1], 10),
+          left: parseInt(item.left_high.split(",")[0], 10),
+          width:
+            parseInt(item.right_low.split(",")[0], 10) - parseInt(item.left_high.split(",")[0], 10),
+          height:
+            parseInt(item.right_low.split(",")[1], 10) - parseInt(item.left_high.split(",")[1], 10),
+        }))
+      );
     } catch (error) {
       Swal.fire("네트워크 오류가 있습니다", "", "warning");
     }
   };
 
-  const startResizing = (e, button) => {
+  const toggleDragMode = () => {
+    setIsDragMode((prevMode) => !prevMode);
+  };
+
+  const startResizing = (e, button, direction) => {
     e.preventDefault();
+
     const initialWidth = e.target.parentElement.offsetWidth;
     const initialHeight = e.target.parentElement.offsetHeight;
     const startX = e.clientX;
     const startY = e.clientY;
+    const { left, top } = button;
 
     const resize = (event) => {
-      const newWidth = initialWidth + (event.clientX - startX);
-      const newHeight = initialHeight + (event.clientY - startY);
+      let newWidth = initialWidth;
+      let newHeight = initialHeight;
+      let newLeft = left;
+      let newTop = top;
+
+      // 방향에 따라 크기 및 위치를 조정
+      if (direction.includes("right")) {
+        newWidth = initialWidth + (event.clientX - startX);
+      }
+      if (direction.includes("bottom")) {
+        newHeight = initialHeight + (event.clientY - startY);
+      }
+      if (direction.includes("left")) {
+        newWidth = initialWidth - (event.clientX - startX);
+        newLeft = left + (event.clientX - startX);
+      }
+      if (direction.includes("top")) {
+        newHeight = initialHeight - (event.clientY - startY);
+        newTop = top + (event.clientY - startY);
+      }
 
       setTicketInfoList((prevList) =>
         prevList.map((item) =>
           item.work_dvcd === button.work_dvcd
-            ? { ...item, width: newWidth + "px", height: newHeight + "px" }
+            ? { ...item, width: newWidth, height: newHeight, left: newLeft, top: newTop }
             : item
         )
       );
@@ -133,6 +168,34 @@ const KioskScreen = () => {
         setRefresh((refresh) => refresh * -1);
       });
     }
+  };
+
+  const startDrag = (e, button) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const { left, top } = button;
+
+    const onDrag = (event) => {
+      const deltaX = event.clientX - startX;
+      const deltaY = event.clientY - startY;
+
+      setTicketInfoList((prevList) =>
+        prevList.map((item) =>
+          item.work_dvcd === button.work_dvcd
+            ? { ...item, left: left + deltaX, top: top + deltaY }
+            : item
+        )
+      );
+    };
+
+    const stopDrag = () => {
+      window.removeEventListener("mousemove", onDrag);
+      window.removeEventListener("mouseup", stopDrag);
+    };
+
+    window.addEventListener("mousemove", onDrag);
+    window.addEventListener("mouseup", stopDrag);
   };
 
   const closeModal = () => {
@@ -265,12 +328,18 @@ const KioskScreen = () => {
 
   return (
     <div className="kiosk-screen">
+      {/* 편집 모드 토글 버튼 */}
+      <button onClick={toggleDragMode} className="darg-mode-toggle">
+        {isDragMode ? "편집 모드 끄기" : "편집 모드 켜기"}
+      </button>
+
       {/* 자동 로그아웃 기능 */}
       {isEditMode && (
         <div className="session-control">
           <span>남은 시간: {millisToMinutesAndSeconds(remaining)}</span>
         </div>
       )}
+
       <div className="navbar">
         <img className="logo" src={logo} alt="iM 뱅크" />
         {/* <ul className="navbar-menu">
@@ -281,31 +350,84 @@ const KioskScreen = () => {
       </div>
       <div className="content-container">
         <div className="left-section">
-          {!isEditMode && <img className="banker" src={banker} alt="AI 은행원" />}
+          <img className="banker" src={banker} alt="AI 은행원" />
         </div>
-        <div className="button-container">
+        <div className={`button-container ${isDragMode ? "grid-background" : ""}`}>
           {ticketInfoList.map((button) => (
             <div
-              className="service-button-wrapper resizable-button"
               key={button.work_dvcd}
-              style={{ width: button.width || "150px", height: button.height || "50px" }}
+              className="service-button-wrapper"
+              style={{
+                top: `${button.top}px`,
+                left: `${button.left}px`,
+                width: `${button.width}px`,
+                height: `${button.height}px`,
+                position: isDragMode ? "absolute" : "static",
+                cursor: isDragMode ? "move" : "pointer",
+              }}
+              onMouseDown={(e) => isDragMode && startDrag(e, button)}
             >
               <button
                 className="service-button"
-                onClick={() =>
-                  isEditMode ? toggleEditOptions(button.work_dvcd) : handleTicketIssue(button)
-                }
+                onClick={() => (isEditMode || isDragMode ? null : handleTicketIssue(button))}
               >
                 <h1>{button.work_dvcd_nm}</h1>
-                {!isEditMode && (
-                  <p className="waiting-info">
-                    대기 인원: {button.wait_people} (예상 소요 시간: {button.wait_time} 분)
-                  </p>
-                )}
+                {!isEditMode ||
+                  isDragMode(
+                    <p className="waiting-info">
+                      대기 인원: {button.wait_people} (예상 소요 시간: {button.wait_time} 분)
+                    </p>
+                  )}
               </button>
-              {isEditMode && (
+              <div
+                className="service-button-wrapper"
+                style={{
+                  top: `${button.top}px`,
+                  left: `${button.left}px`,
+                  width: `${button.width}px`,
+                  height: `${button.height}px`,
+                  position: isDragMode ? "absolute" : "static",
+                }}
+              >
+                {/* 크기 조정 핸들 - 각 방향 */}
+                <div
+                  className="resize-handle top-left"
+                  onMouseDown={(e) => startResizing(e, button, "top left")}
+                ></div>
+                <div
+                  className="resize-handle top-right"
+                  onMouseDown={(e) => startResizing(e, button, "top right")}
+                ></div>
+                <div
+                  className="resize-handle bottom-left"
+                  onMouseDown={(e) => startResizing(e, button, "bottom left")}
+                ></div>
+                <div
+                  className="resize-handle bottom-right"
+                  onMouseDown={(e) => startResizing(e, button, "bottom right")}
+                ></div>
+                <div
+                  className="resize-handle top"
+                  onMouseDown={(e) => startResizing(e, button, "top")}
+                ></div>
+                <div
+                  className="resize-handle bottom"
+                  onMouseDown={(e) => startResizing(e, button, "bottom")}
+                ></div>
+                <div
+                  className="resize-handle left"
+                  onMouseDown={(e) => startResizing(e, button, "left")}
+                ></div>
+                <div
+                  className="resize-handle right"
+                  onMouseDown={(e) => startResizing(e, button, "right")}
+                ></div>
+              </div>
+              {/* 여기부터 같은 내용 조건부 */}
+              {isDragMode && (
                 <div className="resize-handle" onMouseDown={(e) => startResizing(e, button)}></div>
               )}
+              {/* 편집모드 시작, 수정 하기 전
               {isEditMode && !isModifyingButton && (
                 <div
                   className="service-button"
@@ -314,31 +436,34 @@ const KioskScreen = () => {
                   }
                 >
                   <h1>{button.work_dvcd_nm}</h1>
-                  {/* {!isEditMode && !isModifyingButton && !isFlag && activeEditButton == button.work_dvcd && <h1>{button.work_dvcd_nm}</h1>} */}
+                  {/* 편집모드가 아님 => 대기인원, 시간 문구 */}
+              {/*               
                   {!isEditMode && (
                     <p className="waiting-info">
                       대기 인원: {button.wait_people} (예상 소요 시간: {button.wait_time} 분)
                     </p>
                   )}
                 </div>
-              )}
-              {isEditMode && isModifyingButton && activeEditButton !== button.work_dvcd && (
-                <div
-                  className="service-button"
-                  onClick={() =>
-                    isEditMode ? toggleEditOptions(button.work_dvcd) : handleTicketIssue(button)
-                  }
-                >
-                  <h1>{button.work_dvcd_nm}</h1>
-                  {/* {!isEditMode && !isModifyingButton && !isFlag && activeEditButton == button.work_dvcd && <h1>{button.work_dvcd_nm}</h1>} */}
-                  {!isEditMode && (
+              )} */}
+              {/* 편집 모드 => 특정 업무 선택 / 편집모드 X => 번호표 발급 */}
+
+              {/* <div
+                className="service-button"
+                onClick={() =>
+                  isEditMode ? toggleEditOptions(button.work_dvcd) : handleTicketIssue(button)
+                }
+              >
+                <h1>{button.work_dvcd_nm}</h1> */}
+
+              {/* {!isEditMode && (
                     <p className="waiting-info">
                       대기 인원: {button.wait_people} (예상 소요 시간: {button.wait_time} 분)
                     </p>
-                  )}
-                </div>
-              )}
-              {isEditMode && activeEditButton === button.work_dvcd && !isModifyingButton && (
+                  )} */}
+              {/* </div>
+
+              {/* 편집모드 + 수정하려고 선택한 업무 + 수정중이 아님 */}
+              {/* {isEditMode && activeEditButton === button.work_dvcd && !isModifyingButton && (
                 <div className="edit-buttons">
                   <button className="edit-button" onClick={handleModifyButtonClick}>
                     수정
@@ -347,9 +472,10 @@ const KioskScreen = () => {
                     삭제
                   </button>
                 </div>
-              )}
+              )}  */}
 
-              {isEditMode && isModifyingButton && activeEditButton === button.work_dvcd && (
+              {/* 편집모드 + 수정중인 버튼 + 선택한 버튼 */}
+              {/* {isEditMode && isModifyingButton && activeEditButton === button.work_dvcd && (
                 <div className="service-button-wrapper new-button">
                   <div className="service-button">
                     <input
@@ -375,6 +501,7 @@ const KioskScreen = () => {
                   </div>
                 </div>
               )}
+              */}
             </div>
           ))}
           {isEditMode && (
@@ -408,9 +535,9 @@ const KioskScreen = () => {
               )}
             </>
           )}
-          <div className="service-button" onClick={() => handleLayoutClick()}>
+          {/* <div className="service-button" onClick={() => handleLayoutClick()}>
             <h1>창구 배치도</h1>
-          </div>
+          </div> */}
         </div>
       </div>
       {isLoginModalOpen && (
