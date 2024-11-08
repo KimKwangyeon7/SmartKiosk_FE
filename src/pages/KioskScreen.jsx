@@ -79,6 +79,35 @@ const KioskScreen = () => {
     }
   };
 
+  const startResizing = (e, button) => {
+    e.preventDefault();
+    const initialWidth = e.target.parentElement.offsetWidth;
+    const initialHeight = e.target.parentElement.offsetHeight;
+    const startX = e.clientX;
+    const startY = e.clientY;
+
+    const resize = (event) => {
+      const newWidth = initialWidth + (event.clientX - startX);
+      const newHeight = initialHeight + (event.clientY - startY);
+
+      setTicketInfoList((prevList) =>
+        prevList.map((item) =>
+          item.work_dvcd === button.work_dvcd
+            ? { ...item, width: newWidth + "px", height: newHeight + "px" }
+            : item
+        )
+      );
+    };
+
+    const stopResizing = () => {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+    };
+
+    window.addEventListener("mousemove", resize);
+    window.addEventListener("mouseup", stopResizing);
+  };
+
   const handleTicketIssue = async (button) => {
     const ticketData = {
       dept_nm: dept_name,
@@ -244,141 +273,144 @@ const KioskScreen = () => {
       )}
       <div className="navbar">
         <img className="logo" src={logo} alt="iM 뱅크" />
-        <ul className="navbar-menu">
+        {/* <ul className="navbar-menu">
           <li onClick={isLoggedIn ? handleLogout : () => setIsLoginModalOpen(true)}>
             {isLoggedIn ? "로그아웃" : "로그인"}
           </li>
-        </ul>
+        </ul> */}
       </div>
-      <div className="left-section">
-        {!isEditMode && <img className="banker" src={banker} alt="AI 은행원" />}
-      </div>
-      <div className="button-container">
-        {ticketInfoList.map((button) => (
-          <div className="service-button-wrapper" key={button.work_dvcd}>
-            {!isEditMode && (
-              <div
+      <div className="content-container">
+        <div className="left-section">
+          {!isEditMode && <img className="banker" src={banker} alt="AI 은행원" />}
+        </div>
+        <div className="button-container">
+          {ticketInfoList.map((button) => (
+            <div
+              className="service-button-wrapper resizable-button"
+              key={button.work_dvcd}
+              style={{ width: button.width || "150px", height: button.height || "50px" }}
+            >
+              <button
                 className="service-button"
                 onClick={() =>
                   isEditMode ? toggleEditOptions(button.work_dvcd) : handleTicketIssue(button)
                 }
               >
                 <h1>{button.work_dvcd_nm}</h1>
-                {/* {!isEditMode && !isModifyingButton && !isFlag && activeEditButton == button.work_dvcd && <h1>{button.work_dvcd_nm}</h1>} */}
                 {!isEditMode && (
                   <p className="waiting-info">
                     대기 인원: {button.wait_people} (예상 소요 시간: {button.wait_time} 분)
                   </p>
                 )}
-              </div>
-            )}
-            {isEditMode && !isModifyingButton && (
-              <div
-                className="service-button"
-                onClick={() =>
-                  isEditMode ? toggleEditOptions(button.work_dvcd) : handleTicketIssue(button)
-                }
-              >
-                <h1>{button.work_dvcd_nm}</h1>
-                {/* {!isEditMode && !isModifyingButton && !isFlag && activeEditButton == button.work_dvcd && <h1>{button.work_dvcd_nm}</h1>} */}
-                {!isEditMode && (
-                  <p className="waiting-info">
-                    대기 인원: {button.wait_people} (예상 소요 시간: {button.wait_time} 분)
-                  </p>
-                )}
-              </div>
-            )}
-            {isEditMode && isModifyingButton && activeEditButton !== button.work_dvcd && (
-              <div
-                className="service-button"
-                onClick={() =>
-                  isEditMode ? toggleEditOptions(button.work_dvcd) : handleTicketIssue(button)
-                }
-              >
-                <h1>{button.work_dvcd_nm}</h1>
-                {/* {!isEditMode && !isModifyingButton && !isFlag && activeEditButton == button.work_dvcd && <h1>{button.work_dvcd_nm}</h1>} */}
-                {!isEditMode && (
-                  <p className="waiting-info">
-                    대기 인원: {button.wait_people} (예상 소요 시간: {button.wait_time} 분)
-                  </p>
-                )}
-              </div>
-            )}
-            {isEditMode && activeEditButton === button.work_dvcd && !isModifyingButton && (
-              <div className="edit-buttons">
-                <button className="edit-button" onClick={handleModifyButtonClick}>
-                  수정
-                </button>
-                <button className="delete-button" onClick={() => handleDelete(button)}>
-                  삭제
-                </button>
-              </div>
-            )}
-
-            {isEditMode && isModifyingButton && activeEditButton === button.work_dvcd && (
-              <div className="service-button-wrapper new-button">
-                <div className="service-button">
-                  <input
-                    type="text"
-                    value={editButtonName}
-                    onChange={(e) => setEditButtonName(e.target.value)}
-                    placeholder={button.work_dvcd_nm}
-                    autoFocus
-                    className="button-input"
-                    style={{ width: "125px" }}
-                  />
-                </div>
-                <div className="edit-buttons">
-                  <button
-                    className="edit-button"
-                    onClick={() => handleSaveModifyButton(button.work_dvcd_nm)}
-                  >
-                    저장
-                  </button>
-                  <button className="delete-button" onClick={handleCancelingModifying}>
-                    취소
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-        {isEditMode && (
-          <>
-            {isAddingButton ? (
-              <div className="service-button-wrapper new-button">
-                <div className="service-button">
-                  <input
-                    type="text"
-                    value={newButtonName}
-                    onChange={(e) => setNewButtonName(e.target.value)}
-                    placeholder="입력"
-                    autoFocus
-                    className="button-input"
-                    style={{ width: "125px" }}
-                  />
-                </div>
-                <div className="edit-buttons">
-                  <button className="edit-button" onClick={handleSaveNewButton}>
-                    저장
-                  </button>
-                  <button className="delete-button" onClick={() => setIsAddingButton(false)}>
-                    취소
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button className="add-button" onClick={handleAddButtonClick}>
-                &#10133;
               </button>
-            )}
-          </>
-        )}
-      </div>
+              {isEditMode && (
+                <div className="resize-handle" onMouseDown={(e) => startResizing(e, button)}></div>
+              )}
+              {isEditMode && !isModifyingButton && (
+                <div
+                  className="service-button"
+                  onClick={() =>
+                    isEditMode ? toggleEditOptions(button.work_dvcd) : handleTicketIssue(button)
+                  }
+                >
+                  <h1>{button.work_dvcd_nm}</h1>
+                  {/* {!isEditMode && !isModifyingButton && !isFlag && activeEditButton == button.work_dvcd && <h1>{button.work_dvcd_nm}</h1>} */}
+                  {!isEditMode && (
+                    <p className="waiting-info">
+                      대기 인원: {button.wait_people} (예상 소요 시간: {button.wait_time} 분)
+                    </p>
+                  )}
+                </div>
+              )}
+              {isEditMode && isModifyingButton && activeEditButton !== button.work_dvcd && (
+                <div
+                  className="service-button"
+                  onClick={() =>
+                    isEditMode ? toggleEditOptions(button.work_dvcd) : handleTicketIssue(button)
+                  }
+                >
+                  <h1>{button.work_dvcd_nm}</h1>
+                  {/* {!isEditMode && !isModifyingButton && !isFlag && activeEditButton == button.work_dvcd && <h1>{button.work_dvcd_nm}</h1>} */}
+                  {!isEditMode && (
+                    <p className="waiting-info">
+                      대기 인원: {button.wait_people} (예상 소요 시간: {button.wait_time} 분)
+                    </p>
+                  )}
+                </div>
+              )}
+              {isEditMode && activeEditButton === button.work_dvcd && !isModifyingButton && (
+                <div className="edit-buttons">
+                  <button className="edit-button" onClick={handleModifyButtonClick}>
+                    수정
+                  </button>
+                  <button className="delete-button" onClick={() => handleDelete(button)}>
+                    삭제
+                  </button>
+                </div>
+              )}
 
-      <div className="right-section">
-        <div className="service-button" onClick={() => handleLayoutClick()}>
-          <h1>창구 배치도</h1>
+              {isEditMode && isModifyingButton && activeEditButton === button.work_dvcd && (
+                <div className="service-button-wrapper new-button">
+                  <div className="service-button">
+                    <input
+                      type="text"
+                      value={editButtonName}
+                      onChange={(e) => setEditButtonName(e.target.value)}
+                      placeholder={button.work_dvcd_nm}
+                      autoFocus
+                      className="button-input"
+                      style={{ width: "125px" }}
+                    />
+                  </div>
+                  <div className="edit-buttons">
+                    <button
+                      className="edit-button"
+                      onClick={() => handleSaveModifyButton(button.work_dvcd_nm)}
+                    >
+                      저장
+                    </button>
+                    <button className="delete-button" onClick={handleCancelingModifying}>
+                      취소
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+          {isEditMode && (
+            <>
+              {isAddingButton ? (
+                <div className="service-button-wrapper new-button">
+                  <div className="service-button">
+                    <input
+                      type="text"
+                      value={newButtonName}
+                      onChange={(e) => setNewButtonName(e.target.value)}
+                      placeholder="입력"
+                      autoFocus
+                      className="button-input"
+                      style={{ width: "125px" }}
+                    />
+                  </div>
+                  <div className="edit-buttons">
+                    <button className="edit-button" onClick={handleSaveNewButton}>
+                      저장
+                    </button>
+                    <button className="delete-button" onClick={() => setIsAddingButton(false)}>
+                      취소
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button className="add-button" onClick={handleAddButtonClick}>
+                  &#10133;
+                </button>
+              )}
+            </>
+          )}
+          <div className="service-button" onClick={() => handleLayoutClick()}>
+            <h1>창구 배치도</h1>
+          </div>
         </div>
       </div>
       {isLoginModalOpen && (

@@ -49,3 +49,36 @@ export const updateWicket = async (code) => {
       console.error(err);
     });
 };
+
+export const moveWicket = async (code) => {
+  return axiosWrapper
+    .patch("/wicket/move", code)
+    .then((response) => {
+      console.log("서버에 변경 사항 전송 성공", response.data);
+    })
+    .catch((error) => {
+      console.error("서버에 변경 사항 전송 실패", error);
+    });
+};
+
+export const moveKiosk = async (data) => {
+  return axiosWrapper
+    .patch("/wicket/kiosk/move", data)
+    .then((response) => {
+      console.log("서버에 변경 사항 전송 성공", response.data);
+    })
+    .catch((error) => {
+      console.error("서버에 변경 사항 전송 실패", error);
+    });
+};
+
+export const deleteFloor = async (floor) => {
+  return axiosWrapper
+    .delete(`/wicket/floor/${floor}`)
+    .then((response) => {
+      console.log("서버에 변경 사항 전송 성공", response.data);
+    })
+    .catch((error) => {
+      console.error("서버에 변경 사항 전송 실패", error);
+    });
+};

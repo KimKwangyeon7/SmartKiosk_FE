@@ -16,53 +16,61 @@
   flex-direction: column;
   /* 수직 정렬 */
   height: 100vh;
+  align-items: center;
+  width: 100vw;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   /* 전체 화면 높이 사용 */
 }
 
-.navbar {
-  font-family: 'imbank';
+.center-section {
   display: flex;
-  justify-content: space-between;
-  /* 양쪽 정렬 */
-  align-items: center;
-  /* 수직 중앙 정렬 */
-  background-color: #f8f9fa;
-  /* 메뉴바 배경색 */
-  padding: 20px 20px;
-  /* 여백 */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  /* 그림자 효과 */
+  justify-content: center;
+  align-items: flex-end;
+  width: 70%;
+  height: 100%;
 }
 
-.navbar-title {
-  font-size: 24px;
-  /* 제목 글자 크기 */
-  margin: 0;
-  /* 마진 제거 */
+.content-container {
+  display: flex;
+  width: 90%;
+  /* 화면 너비의 90% 사용 */
+  height: 100%;
+  /* navbar 아래 모든 공간 차지 */
+  justify-content: space-between;
+  padding: 20px 0;
+}
+
+.navbar {
+  width: 90%;
+  padding: 100px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.5vw;
+  background-color: #ffffff;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.navbar .logo {
+  width: 25vw;
+  /* 로고 크기를 화면 비율에 맞게 조정 */
+  max-width: 300px;
+  height: auto;
 }
 
 .navbar-menu {
-  list-style: none;
-  /* 불릿 제거 */
   display: flex;
-  /* 가로 배열 */
-  margin: 0;
-  /* 마진 제거 */
-  padding: 0;
-  /* 패딩 제거 */
+  gap: 20px;
+  list-style: none;
+  font-size: 1.5vw;
 }
 
 .navbar-menu li {
-  margin-left: 20px;
-  /* 메뉴 아이템 간격 */
   cursor: pointer;
-  /* 포인터 커서 */
-  font-size: 18px;
-  /* 글자 크기 */
-  color: #666;
+  font-weight: bold;
+  font-size: 4vw;
 }
 
 .navbar-menu li a {
@@ -73,26 +81,22 @@
 }
 
 .left-section {
-  flex: 1;
-  /* 왼쪽 섹션이 가능한 공간 차지 */
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  /* 상단 정렬 */
-  align-items: flex-start;
-  /* 왼쪽 정렬 */
+  align-items: flex-end;
+  /* 이미지 하단 맞춤 */
+  justify-content: center;
+  width: 60%;
+  /* 화면의 40% 너비 차지 */
 }
 
 .button-container {
-  flex: 2;
-  /* 버튼 컨테이너가 가운데 공간 차지 */
   display: flex;
   flex-direction: column;
-  /* 버튼들을 세로로 정렬 */
   align-items: center;
-  /* 중앙 정렬 */
-  width: 100%;
-  /* 버튼 컨테이너 너비 설정 */
+  justify-content: center;
+  width: 40%;
+  /* 화면의 60% 너비 차지 */
+  gap: 20px;
 }
 
 .service-button-wrapper {
@@ -103,14 +107,30 @@
   /* 버튼 사이의 간격 */
 }
 
-/* Main service button */
 .service-button {
-  padding: 20px;
-  border-radius: 8px;
-  background-color: #f0f0f0;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  padding: 15px 20px;
+  font-size: 1.2vw;
+  width: 80%;
+  /* 버튼이 중앙에 넓게 보이도록 설정 */
+  max-width: 300px;
+  /* 버튼 최대 너비 제한 */
 }
+
+.resizable-button {
+  position: relative;
+  display: inline-block;
+}
+
+.resize-handle {
+  width: 10px;
+  height: 10px;
+  background-color: gray;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  cursor: se-resize;
+}
+
 
 .service-button:hover {
   background-color: #e0e0e0;
@@ -159,17 +179,6 @@
   /* 회색 글자 */
 }
 
-.right-section {
-  flex: 1;
-  /* 왼쪽 섹션이 가능한 공간 차지 */
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  /* 상단 정렬 */
-  align-items: end;
-  /* 왼쪽 정렬 */
-}
-
 .logo {
   height: 25px;
   /* 원하는 높이로 설정 */
@@ -181,22 +190,12 @@
 
 
 .banker {
-  width: auto;
-  /* 너비 자동 */
-  height: 100%;
-  /* 높이 자동 */
-  max-width: 70%;
-  /* 최대 너비 설정 */
+  max-width: 90%;
+  /* 화면 너비의 90%를 차지 */
+  max-height: 100%;
+  /* 화면 높이에 맞추되 하단에서 시작하도록 */
   object-fit: contain;
-  /* 비율 유지 */
-  position: absolute;
-  /* 절대 위치 */
-  top: 100px;
-  /* 상단 메뉴 아래로 이동 */
-  left: 0;
-  /* 오른쪽 정렬 */
-  z-index: 1;
-  /* 이미지가 버튼 아래에 오도록 */
+  position: relative;
 }
 
 h1 {
