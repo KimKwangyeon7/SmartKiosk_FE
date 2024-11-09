@@ -1,80 +1,113 @@
-/* KioskScreen.css */
 @font-face {
   font-family: 'imbank';
-  /* 원하는 글꼴 이름 */
   src: url('../assets/JalnanGothicTTF.ttf') format('truetype');
-  /* 경로는 파일 위치에 맞게 조정 */
   font-weight: lighter;
-  /* 필요한 경우 두께 조정 */
   font-style: normal;
-  /* 이탤릭체 사용 시 'italic'로 설정 */
 }
 
 .kiosk-screen {
-  background-image: url('../assets/background.png');
   display: flex;
   flex-direction: column;
-  /* 수직 정렬 */
   height: 100vh;
-  align-items: center;
   width: 100vw;
+  align-items: center;
+  justify-content: center;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  /* 전체 화면 높이 사용 */
 }
-
-.button-container {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  width: 70%;
-  height: 100%;
-}
-
 
 .navbar {
-  width: 90%;
-  padding: 100px;
+  width: 90vw;
+  height: 10vh;
+  /* 화면 높이의 10% */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 1.5vw;
-  background-color: #ffffff;
+  font-size: 2vh;
+  /* 화면 높이에 비례 */
+  padding: 1vh;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.navbar .logo {
-  width: 25vw;
-  /* 로고 크기를 화면 비율에 맞게 조정 */
-  max-width: 300px;
+.logo {
+  height: 8vh;
+  /* 높이를 비율로 설정 */
+  width: auto;
+}
+
+.left-section {
+  display: flex;
+  align-items: flex-end;
+  width: 40vw;
+  /* 화면 너비의 40% */
+  height: 80vh;
+  /* 화면 높이의 80% */
+}
+
+.banker {
+  width: 90%;
+  /* left-section에 맞게 */
   height: auto;
+  object-fit: contain;
+}
+
+.button-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12vw, 1fr));
+  /* 자동으로 크기 조절 */
+  gap: 1vh;
+  width: 50vw;
+  /* 화면 너비의 50% */
+  height: auto;
+  padding: 1vh;
+}
+
+.service-button-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.service-button {
+  font-size: 2.5vh;
+  /* 글자 크기를 화면 비율로 */
+  padding: 1vh;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  border-radius: 0.5vw;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.service-button:hover {
+  transform: scale(1.05);
+}
+
+.waiting-info {
+  font-size: 1.5vh;
+  color: #666;
 }
 
 .navbar-menu {
   display: flex;
-  gap: 20px;
+  gap: 2vw;
   list-style: none;
-  font-size: 1.5vw;
+  font-size: 3vh;
 }
 
 .navbar-menu li {
   cursor: pointer;
   font-weight: bold;
-  font-size: 4vw;
-}
-
-.navbar-menu li a {
-  text-decoration: none;
-  /* 밑줄 제거 */
-  color: inherit;
-  /* 부모 요소의 글자 색상 계승 */
+  font-size: 2.5vh;
 }
 
 .content-container {
   display: flex;
   width: 100%;
-  height: 100%;
+  height: calc(100vh - 10vh);
+  /* navbar를 제외한 화면 높이 */
 }
 
 .left-section {
@@ -82,256 +115,145 @@
   align-items: flex-end;
   justify-content: center;
   width: 40%;
-  /* 화면의 40% 너비 */
   height: 100%;
+}
+
+.left-section {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 60%;
+  height: 100%;
+}
+
+.banker {
+  width: auto;
+  height: 80%;
+  /* 아래로 조금 내려서 하단에 맞춰진 느낌 제공 */
+  object-fit: cover;
+  align-self: flex-end;
+  /* 부모 컨테이너의 하단에 고정 */
+}
+
+.sub-button-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 60%;
+  height: 30%;
 }
 
 .button-container {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  /* 10x10 그리드 */
   grid-template-rows: repeat(10, 1fr);
-  gap: 5px;
-  width: 60%;
-  /* 화면의 60% 너비 */
-  height: 100%;
+  gap: 1vw;
+  width: 50vw;
+  height: 70vh;
   position: relative;
 }
 
 .service-button-wrapper {
+  width: 15vw;
+  /* 화면 너비의 비율에 따라 */
+  height: 7vh;
+  /* 화면 높이의 비율에 따라 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
-  /* 다른 스타일 */
+  margin: 1vh;
+  /* 화면 비율에 따라 여백을 설정 */
 }
 
 .service-button {
-  font-size: 1.2vw;
-  padding: 100px 20px;
+  font-size: 2.5vh;
+  /* 화면 높이에 비례하여 글자 크기 조정 */
+  padding: 1vh 1vw;
+  /* 상하, 좌우 여백 설정 */
+  border-radius: 0.5vw;
+  /* 버튼 모서리 둥글기 */
   width: 100%;
+  /* 부모 컨테이너에 맞춤 */
   height: 100%;
+  /* 부모 컨테이너에 맞춤 */
+  text-align: center;
+  background-color: #ffffff;
+  /* 기본 배경색 */
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
-
-.resizable-button {
-  position: relative;
-  display: inline-block;
-}
-
-.resizable-button:hover .resize-handle {
-  display: block;
-}
-
-.resize-handle {
-  width: 10px;
-  height: 10px;
-  background-color: gray;
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  cursor: se-resize;
-  display: none;
-}
-
-.resize-handle {
-  width: 10px;
-  height: 10px;
-  background-color: gray;
-  position: absolute;
-  cursor: pointer;
-}
-
-.top-left {
-  top: -5px;
-  left: -5px;
-  cursor: nwse-resize;
-}
-
-.top-right {
-  top: -5px;
-  right: -5px;
-  cursor: nesw-resize;
-}
-
-.bottom-left {
-  bottom: -5px;
-  left: -5px;
-  cursor: nesw-resize;
-}
-
-.bottom-right {
-  bottom: -5px;
-  right: -5px;
-  cursor: nwse-resize;
-}
-
-.top {
-  top: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  cursor: ns-resize;
-}
-
-.bottom {
-  bottom: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  cursor: ns-resize;
-}
-
-.left {
-  left: -5px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: ew-resize;
-}
-
-.right {
-  right: -5px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: ew-resize;
-}
-
-
 
 .service-button:hover {
-  background-color: #e0e0e0;
+  background-color: #f0f0f0;
+  transform: scale(1.05);
+  /* hover 시 약간 확대 효과 */
+}
+
+.service-button h1 {
+  font-size: 1.5vh;
+  margin: 0;
+}
+
+.waiting-info {
+  font-size: 1.2vh;
+  color: #666;
 }
 
 .edit-buttons {
   display: flex;
-  gap: 0;
-  margin-left: 0px;
-  /* Main button과 edit-buttons 사이의 간격 */
+  gap: 1vw;
 }
 
-/* Individual edit button styles */
 .edit-button,
 .delete-button {
-  padding: 25px 12px;
+  padding: 1vh 1vw;
   border: none;
-  border-radius: 5px;
+  border-radius: 0.5vw;
   cursor: pointer;
   color: #fff;
-  font-size: 12px;
-  font-weight: bold;
+  font-size: 1.5vh;
 }
 
 .edit-button {
   background-color: #4CAF50;
-  /* Green */
 }
 
 .delete-button {
   background-color: #FF4C4C;
-  /* Red */
-}
-
-.edit-button:hover,
-.delete-button:hover {
-  opacity: 0.9;
-}
-
-.service-button p {
-  margin: 5px 0 0;
-  /* 대기인원, 예상 소요 시간의 상단 여백 */
-  font-size: 14px;
-  /* 글자 크기 */
-  color: #666;
-  /* 회색 글자 */
-}
-
-.logo {
-  height: 25px;
-  /* 원하는 높이로 설정 */
-  width: auto;
-  /* 비율 유지 */
-  margin: 10px 0;
-  /* 상하 여백 조정 */
-}
-
-
-.banker {
-  max-width: 90%;
-  /* 화면 너비의 90%를 차지 */
-  max-height: 100%;
-  /* 화면 높이에 맞추되 하단에서 시작하도록 */
-  object-fit: contain;
-  position: relative;
-}
-
-h1 {
-  font-size: 24px;
-  /* 제목 글자 크기 */
-  margin: 0;
-  /* 상단 마진 제거 */
-  text-align: center;
-  /* 중앙 정렬 */
-}
-
-.waiting-info {
-  font-size: 14px;
-  /* 대기 인원 및 예상 소요 시간 글자 크기 */
-  color: #666;
-  /* 회색 글자 */
 }
 
 .modal-overlay {
   position: fixed;
-  /* 화면에 고정 */
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.7);
-  /* 반투명 배경 */
   display: flex;
-  /* flexbox로 중앙 정렬 */
   align-items: center;
-  /* 수직 중앙 정렬 */
   justify-content: center;
-  /* 수평 중앙 정렬 */
   z-index: 1000;
-  /* 다른 요소 위에 표시 */
 }
 
 .modal-content {
-  position: relative;
-  /* 버튼 위치를 위해 상대 위치 설정 */
   background: white;
-  /* 모달 배경색 */
-  padding: 20px;
-  /* 여백 */
-  border-radius: 8px;
-  /* 모서리 둥글게 */
-  width: 400px;
-  /* 너비 조정 */
-  max-width: 80%;
-  /* 모바일 대응을 위한 최대 너비 */
+  padding: 2vh 2vw;
+  border-radius: 1vw;
+  width: 60vw;
+  max-width: 80vw;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  /* 그림자 효과 */
 }
 
 .close-button {
   position: absolute;
-  /* 절대 위치 설정 */
-  top: 10px;
-  /* 위쪽 여백 */
-  right: 10px;
-  /* 오른쪽 여백 */
+  top: 1vh;
+  right: 1vw;
   background: none;
-  /* 배경 제거 */
   border: none;
-  /* 테두리 제거 */
   color: black;
-  /* 빨간색 */
-  font-size: 24px;
-  /* 크기 조정 */
+  font-size: 3vh;
   cursor: pointer;
-  /* 커서 모양 변경 */
-}
-
-.close-button:hover {
-  color: darkred;
-  /* 마우스 오버 시 색상 변경 */
 }
 
 .custom-alert {
@@ -341,135 +263,39 @@ h1 {
   transform: translateX(-50%);
   background-color: #ffeded;
   color: #d9534f;
-  padding: 10px 20px;
-  border-radius: 5px;
+  padding: 1vh 2vw;
+  border-radius: 1vw;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 1000;
-  font-size: 16px;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
-
-.alert-message {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #ffffff;
-  color: #333;
-  padding: 20px;
-  width: 300px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  text-align: center;
-  z-index: 1001;
-}
-
-.alert-message p {
-  margin: 0;
-  font-size: 16px;
-}
-
-.alert-message button {
-  margin-top: 15px;
-  padding: 8px 15px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.alert-message button:hover {
-  background-color: #0056b3;
-}
-
-.basic-message {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #ffffff;
-  color: #333;
-  padding: 20px;
-  width: 300px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  text-align: center;
-  z-index: 1001;
-}
-
-.basic-message p {
-  margin: 0;
-  font-size: 16px;
-}
-
-.basic-message button {
-  margin-top: 15px;
-  padding: 8px 15px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.basic-message button:hover {
-  background-color: #0056b3;
+  font-size: 2vh;
 }
 
 .add-button {
-  font-size: 24px;
+  font-size: 3vh;
 }
 
 .button-input {
-  padding: 0px;
+  padding: 0.5vh 1vw;
   border: none;
   background-color: transparent;
   outline: none;
-  font-size: 24px;
-  /* 제목 글자 크기 */
-  margin: 0;
-  /* 상단 마진 제거 */
+  font-size: 2vh;
   text-align: center;
-  /* 중앙 정렬 */
   width: 100%;
-  /* 부모 요소의 전체 너비 차지 */
-  box-sizing: border-box;
 }
 
 .session-control {
   position: fixed;
-  /* 요소를 고정 위치로 설정 */
   left: 0;
-  /* 화면 왼쪽 끝에 위치 */
   bottom: 0;
-  /* 화면 아래쪽 끝에 위치 */
   background-color: rgba(0, 0, 0, 0.7);
-  /* 반투명 배경 (선택 사항) */
   color: white;
-  /* 텍스트 색상 */
-  padding: 10px;
-  /* 패딩 설정 (선택 사항) */
-  box-sizing: border-box;
-  /* 패딩과 테두리를 포함한 전체 너비 및 높이를 설정 */
+  padding: 1vh 1vw;
+  font-size: 1.5vh;
 }
 
 .grid-background {
   background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
     linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-size: 2vw 2vw;
 }
