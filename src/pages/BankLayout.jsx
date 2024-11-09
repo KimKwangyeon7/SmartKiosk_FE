@@ -249,15 +249,6 @@ const BankLayout = () => {
     }
   };
 
-  // 수정 버튼 클릭
-  // const handleUpdateCounter = (coord, e) => {
-  //   e.stopPropagation(); // 이벤트 전파 방지
-  //   setSelectedCounter(coord); // 선택된 창구 설정
-  //   setNewCounterName(currentCounters[coord].split(",")[0]); // 이름만 수정 가능
-  //   setSelectedBtn(currentCounters[coord].split(",")[2]);
-  //   setIsEditing(true);
-  // };
-
   const handleUpdateCounter = (coord, e) => {
     e.stopPropagation();
     setSelectedCounter(coord);
