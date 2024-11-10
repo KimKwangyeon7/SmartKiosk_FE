@@ -576,49 +576,50 @@ const BankLayout = () => {
             }}
           >
             {/* 토글 스위치 */}
-            <div
-              className={`toggle-switch ${editMode ? "active" : ""}`}
-              onClick={toggleEditMode}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                width: "120px",
-                height: "40px",
-                padding: "5px",
-                backgroundColor: editMode ? "lightblue" : "lightgray",
-                borderRadius: "20px",
-                cursor: "pointer",
-                position: "relative",
-              }}
-            >
+            {isBranch && (
               <div
+                className={`toggle-switch ${editMode ? "active" : ""}`}
+                onClick={toggleEditMode}
                 style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: editMode ? "10px" : "auto",
-                  right: editMode ? "auto" : "10px",
-                  transform: "translateY(-50%)",
-                  color: "white",
-                  fontSize: "14px",
-                  fontWeight: "bold",
+                  display: "flex",
+                  alignItems: "center",
+                  width: "120px",
+                  height: "40px",
+                  padding: "5px",
+                  backgroundColor: editMode ? "lightblue" : "lightgray",
+                  borderRadius: "20px",
+                  cursor: "pointer",
+                  position: "relative",
                 }}
               >
-                {editMode ? "편집 모드" : "일반 모드"}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: editMode ? "10px" : "auto",
+                    right: editMode ? "auto" : "10px",
+                    transform: "translateY(-50%)",
+                    color: "white",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {editMode ? "편집 모드" : "일반 모드"}
+                </div>
+                <div
+                  className="toggle-circle"
+                  style={{
+                    width: "45px",
+                    height: "45px",
+                    backgroundColor: "white",
+                    borderRadius: "50%",
+                    transition: "transform 0.3s",
+                    transform: editMode ? "translateX(60px)" : "translateX(0)",
+                    zIndex: 1,
+                  }}
+                />
               </div>
-              <div
-                className="toggle-circle"
-                style={{
-                  width: "45px",
-                  height: "45px",
-                  backgroundColor: "white",
-                  borderRadius: "50%",
-                  transition: "transform 0.3s",
-                  transform: editMode ? "translateX(60px)" : "translateX(0)",
-                  zIndex: 1,
-                }}
-              />
-            </div>
-
+            )}
             {/* 편집 모드 전용 버튼 */}
             {editMode && (
               <div style={{ display: "flex", gap: "10px" }}>
