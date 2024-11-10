@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "./BankLayout.css";
 import {
   getWicketInfoList,
@@ -11,6 +12,8 @@ import {
   moveKiosk,
 } from "../api/wicketApi";
 import { getTicketInfoList } from "../api/ticketApi";
+import { logoutUser } from "../api/userApi";
+import { Cookies } from "react-cookie";
 
 const deptNm = "강남";
 
@@ -28,6 +31,9 @@ const BankLayout = () => {
   const [btnList, setBtnList] = useState([]);
   const [selectedBtn, setSelectedBtn] = useState(null);
   const containerRef = useRef(null);
+  const navigate = useNavigate();
+  const cookies = new Cookies();
+  const [startedCounters, setStartedCounters] = useState({});
 
   const fetchData = async () => {
     try {
@@ -66,6 +72,16 @@ const BankLayout = () => {
   console.log(currentCounters);
   const currentKiosks = kiosks[currentFloor] || [];
   const gridSize = 6;
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      cookies.remove("accessToken");
+      navigate("/");
+    } catch (error) {
+      console.error("로그아웃 실패", error);
+    }
+  };
 
   const handleDrop = (x, y, counterName) => {
     setCounters((prev) => {
@@ -134,14 +150,21 @@ const BankLayout = () => {
     });
   };
 
-  // const sendChangesToServer = async (changes) => {
-  //   try {
-  //     const response = await sendUpdatedWicketInfoList(changes);
-  //     console.log("변경사항 전송 성공!");
-  //   } catch (error) {
-  //     console.error("변경사항 전송 실패: ", error);
-  //   }
-  // };
+  const handleStart = () => {
+    setStartedCounters((prev) => ({
+      ...prev,
+      [selectedCounter]: true,
+    }));
+    console.log(`${selectedCounter} 시작됨`);
+  };
+
+  const handleEnd = () => {
+    setStartedCounters((prev) => ({
+      ...prev,
+      [selectedCounter]: false,
+    }));
+    console.log(`${selectedCounter} 종료됨`);
+  };
 
   const toggleEditMode = () => {
     if (editMode) {
@@ -415,6 +438,20 @@ const BankLayout = () => {
         height: "100vh",
       }}
     >
+      {/* Navbar */}
+      <div className="navbar">
+        <Link to="/">
+          <img className="logo" src={require("../assets/logo.svg").default} alt="iM 뱅크" />
+        </Link>
+        <ul className="navbar-menu">
+          <li>
+            <Link to="#" onClick={handleLogout}>
+              로그아웃
+            </Link>
+          </li>
+        </ul>
+      </div>
+
       {currentFloor && (
         <>
           <h1>{currentFloor}층 창구 배치도</h1>
@@ -568,6 +605,15 @@ const BankLayout = () => {
                           }
                           onClick={() => handleCounterClick(coord)}
                         >
+                          {selectedCounter === coord && !editMode && (
+                            <div className="counter-actions">
+                              {startedCounters[coord] ? (
+                                <button onClick={handleEnd}>종료</button>
+                              ) : (
+                                <button onClick={handleStart}>시작</button>
+                              )}
+                            </div>
+                          )}
                           {editMode && selectedCounter === coord && isEditing ? (
                             <>
                               {/* 창구 이름을 텍스트 박스로 표시 */}
@@ -628,6 +674,13 @@ const BankLayout = () => {
                                   </button>
                                 </>
                               )}
+                            </div>
+                          )}
+
+                          {!editMode && selectedCounter === coord && (
+                            <div className="counter-actions">
+                              <button onClick={handleStart}>시작</button>
+                              <button onClick={handleEnd}>종료</button>
                             </div>
                           )}
                         </div>
