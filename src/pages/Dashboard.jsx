@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Bar, Line, Pie } from "react-chartjs-2";
 import {
   getAvgCsnlTime,
@@ -42,10 +42,47 @@ ChartJS.register(
 );
 
 const deptNm = "강남";
-
+const colors = {
+  상담시간: "rgba(75, 192, 192, 0.6)",
+  대기시간: "rgba(255, 99, 132, 0.6)",
+  창구비율: [
+    "rgba(255, 99, 132, 0.6)",
+    "rgba(54, 162, 235, 0.6)",
+    "rgba(255, 206, 86, 0.6)",
+    "rgba(75, 192, 192, 0.6)",
+    "rgba(153, 102, 255, 0.6)",
+    "rgba(255, 159, 64, 0.6)",
+  ],
+  고객비율: [
+    "rgba(255, 99, 132, 0.6)",
+    "rgba(54, 162, 235, 0.6)",
+    "rgba(255, 206, 86, 0.6)",
+    "rgba(75, 192, 192, 0.6)",
+    "rgba(153, 102, 255, 0.6)",
+    "rgba(255, 159, 64, 0.6)",
+  ],
+  시간대: "rgba(153, 102, 255, 0.6)",
+  요일: "rgba(255, 205, 86, 0.6)",
+  연도별: "rgba(54, 162, 235, 0.6)",
+  분기별: "rgba(75, 192, 192, 0.6)",
+  월별: "rgba(255, 99, 132, 0.6)",
+};
 const Dashboard = () => {
   const navigate = useNavigate();
   const cookies = new Cookies();
+
+  // 각 섹션의 ref
+  // 각 그래프의 ref
+  const section1Ref = useRef(null);
+  const section2Ref = useRef(null);
+  const section3Ref = useRef(null);
+  const section4Ref = useRef(null);
+  const section5Ref = useRef(null);
+
+  // 특정 섹션으로 스크롤하는 함수
+  const scrollToSection = (sectionRef) => {
+    sectionRef.current.scrollIntoView({ behavior: "smooth" });
+  };
 
   // Remaining time state and idle timer setup
   const [remaining, setRemaining] = useState(null);
@@ -141,14 +178,7 @@ const Dashboard = () => {
       {
         label: `${deptNm} 업무별 비율`,
         data: [],
-        backgroundColor: [
-          "rgba(255, 99, 132, 0.6)",
-          "rgba(54, 162, 235, 0.6)",
-          "rgba(255, 206, 86, 0.6)",
-          "rgba(75, 192, 192, 0.6)",
-          "rgba(153, 102, 255, 0.6)",
-          "rgba(255, 159, 64, 0.6)",
-        ],
+        backgroundColor: colors.고객비율,
       },
     ],
   });
@@ -160,7 +190,7 @@ const Dashboard = () => {
       {
         label: `${deptNm} 시간대별 고객 수`,
         data: [],
-        backgroundColor: ["rgba(75, 192, 192, 0.6)"],
+        backgroundColor: colors.시간대,
       },
     ],
   });
@@ -231,7 +261,7 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const response = await getAvgCsnlTime(deptNm);
-        //console.log(response.dataBody);
+        console.log(response.dataBody);
         const labels = Object.keys(response.dataBody.myAvg);
         const localDeptData = Object.values(response.dataBody.myAvg);
         const otherDeptData = Object.values(response.dataBody.otherAvg);
@@ -470,7 +500,7 @@ const Dashboard = () => {
     const fetchYearData = async () => {
       try {
         const response = await getYearCnt(deptNm);
-        console.log(response.dataBody);
+        //console.log(response.dataBody);
 
         const list = Object.keys(response.dataBody.my);
         setList(list);
@@ -512,9 +542,9 @@ const Dashboard = () => {
     const fetchMonthData = async () => {
       try {
         const date = "" + nowYear + nowMonth;
-        console.log(date);
+        //console.log(date);
         const response = await getMonthCnt({ deptNm, date });
-        console.log(response.dataBody);
+        //console.log(response.dataBody);
 
         const works = Object.keys(response.dataBody);
         setWorkList(works);
@@ -529,7 +559,7 @@ const Dashboard = () => {
         for (let i = 1; i <= len; i++) {
           label[i - 1] = i;
         }
-        console.log(label);
+        //console.log(label);
         const myMonthData = Object.values(response.dataBody[chosenTask]);
 
         // 그래프 데이터셋 구성
@@ -713,79 +743,141 @@ const Dashboard = () => {
         </ul>
       </div>
 
-      <div className="parent">
-        <div className="bar-data">
-          <Bar data={data} options={options} />
-        </div>
-        <div className="wait-data">
-          <Bar data={waitData} options={waitOptions} />
+      {/* 오른쪽 하단 고정된 목차 */}
+      <div className="floating-toc">
+        <ul>
+          <li onClick={() => scrollToSection(section1Ref)}>상담 및 대기 시간</li>
+          <li onClick={() => scrollToSection(section2Ref)}>창구 및 고객 비율</li>
+          <li onClick={() => scrollToSection(section3Ref)}>고객 분석</li>
+          <li onClick={() => scrollToSection(section4Ref)}>연도별 고객 수</li>
+        </ul>
+      </div>
+
+      {/* Section 1: 상담 및 대기 시간 */}
+      <div className="section-container">
+        <div ref={section1Ref} className="section">
+          <h2>상담 및 대기 시간 분석</h2>
+          <p>
+            업무별 평균 상담 시간과 평균 대기 시간을 비교하여 고객 한 명당 소요 시간을 예측합니다.
+          </p>
+          <div className="subsection">
+            <h3>업무별 평균 상담 시간</h3>
+            <Bar
+              data={data}
+              options={{ responsive: true, plugins: { title: { text: "상담 시간" } } }}
+            />
+          </div>
+          <div className="subsection">
+            <h3>업무별 평균 대기 시간</h3>
+            <Bar
+              data={waitData}
+              options={{ responsive: true, plugins: { title: { text: "대기 시간" } } }}
+            />
+          </div>
         </div>
       </div>
-      <div className="parent">
-        <div className="wicket-data">
-          <Pie data={wicketData} options={wicketPercentageOptions} />
+      {/* Section 2: 창구 및 고객 비율 */}
+      <div className="section-container"></div>
+      <div ref={section2Ref} className="section">
+        <h2>창구 및 고객 비율</h2>
+        <p>각 업무의 창구 비율과 고객 비율을 파악하여 자원 배분을 최적화합니다.</p>
+        <div className="subsection">
+          <h3>업무별 창구 비율</h3>
+          <Pie
+            data={wicketData}
+            options={{ responsive: true, plugins: { title: { text: "창구 비율" } } }}
+          />
         </div>
-        <div className="work-data">
-          <Pie data={workData} options={workPercentageOptions} />
+        <div className="subsection">
+          <h3>업무별 고객 비율</h3>
+          <Pie
+            data={workData}
+            options={{ responsive: true, plugins: { title: { text: "업무 비율" } } }}
+          />
         </div>
       </div>
-      <div className="parent">
-        <div className="time-data">
-          <Line data={timeData} options={timeDataOptions} />
-        </div>
-        <div className="line-data">
-          <Line data={lineData} options={lineOptions} />
+      <div className="section-container">
+        {/* Section 3: 고객 분석 */}
+        <div ref={section3Ref} className="section">
+          <h2>고객 분석</h2>
+          <p>시간대와 요일별 고객 수를 파악하여 고객 방문 패턴을 분석합니다.</p>
+          <div className="subsection">
+            <h3>시간대별 고객 수</h3>
+            <Line
+              data={timeData}
+              options={{ responsive: true, plugins: { title: { text: "시간대별 고객 수" } } }}
+            />
+          </div>
+          <div className="subsection">
+            <h3>요일별 고객 수</h3>
+            <Line
+              data={lineData}
+              options={{ responsive: true, plugins: { title: { text: "요일별 고객 수" } } }}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="year-data">
-        <div>
-          <h3>업무 선택</h3>
-          {renderYearButtons()}
+      {/* Section 4: 연도별 고객 수 */}
+      <div ref={section4Ref} className="section">
+        <div className="sub-section">
+          <h2>연도별 고객 수</h2>
+          <p>연도별, 분기별 고객 수 추이 분석을 통해 고객 수 변동을 파악합니다.</p>
+          <div className="chart-container">
+            <Bar
+              data={yearData}
+              options={{ responsive: true, plugins: { title: { text: "연도별 고객 수" } } }}
+            />
+            <div>{renderYearButtons()}</div>
+          </div>
         </div>
-        <Bar data={yearData} options={yearOptions} />
+
+        <div className="sub-section">
+          {/* Section 5: 분기별 고객 수 */}
+          <h2>분기별 고객 수</h2>
+          <p>연도별로 분기마다 고객 수를 분석하여 성수기와 비성수기를 파악합니다.</p>
+          <div className="chart-container">
+            <div>
+              <select value={year} onChange={(e) => setYear(e.target.value)}>
+                {[2021, 2022, 2023, 2024].map((y) => (
+                  <option key={y} value={y}>
+                    {y}년
+                  </option>
+                ))}
+              </select>
+            </div>
+            <Line data={periodData} options={periodOptions} />
+            <div>{renderTaskButtons()}</div>
+          </div>
+        </div>
       </div>
-      <div className="month-data">
-        <div>
-          <label>연도 선택: </label>
-          <select value={nowYear} onChange={(e) => setNowYear(e.target.value)}>
-            {[2021, 2022, 2023, 2024].map((y) => (
-              <option key={y} value={y}>
-                {y}년
-              </option>
-            ))}
-          </select>
-          <label>월 선택: </label>
-          <select value={nowMonth} onChange={(e) => setNowMonth(e.target.value)}>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((y) => (
-              <option key={y} value={y}>
-                {y}월
-              </option>
-            ))}
-          </select>
+
+      {/* Section 5: 월별 고객 수 - 상세 분석 */}
+      <div ref={section5Ref} className="section">
+        <h2>상세 분석: 월별 고객 수</h2>
+        <p>특정 연도와 월을 선택하여 업무별 고객 수를 상세히 분석합니다.</p>
+        <div className="chart-container">
+          <div>
+            <select value={nowYear} onChange={(e) => setNowYear(e.target.value)}>
+              {[2021, 2022, 2023, 2024].map((y) => (
+                <option key={y} value={y}>
+                  {y}년
+                </option>
+              ))}
+            </select>
+            <select value={nowMonth} onChange={(e) => setNowMonth(e.target.value)}>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => (
+                <option key={m} value={m}>
+                  {m}월
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <Line data={monthData} options={monthOptions} />
+          </div>
+          <div>{renderMonthButtons()}</div>
         </div>
-        <div>
-          <h3>업무 선택</h3>
-          {renderMonthButtons()}
-        </div>
-        <Line data={monthData} options={monthOptions} />
-      </div>
-      <div className="period-data">
-        <div>
-          <label>연도 선택: </label>
-          <select value={year} onChange={(e) => setYear(e.target.value)}>
-            {[2021, 2022, 2023, 2024].map((y) => (
-              <option key={y} value={y}>
-                {y}년
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <h3>업무 선택</h3>
-          {renderTaskButtons()}
-        </div>
-        <Line data={periodData} options={periodOptions} />
       </div>
     </div>
   );

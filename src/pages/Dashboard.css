@@ -1,9 +1,63 @@
-.content {
-	max-width: 1080px;
-	/* 원하는 최대 너비로 설정 */
-	margin: 0 auto;
-	/* 가운데 정렬 */
-	margin-top: 40px;
+.dashboard {
+	height: 100vh;
+	width: 90vw;
+	font-size: 1.2em;
+}
+
+.floating-toc {
+	position: fixed;
+	bottom: 2vh;
+	right: 2vw;
+	background-color: #f9f9f9;
+	border-radius: 8px;
+	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+	padding: 1vh 2vw;
+	z-index: 1000;
+}
+
+.floating-toc ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	text-align: center;
+}
+
+/* Dashboard.css 또는 관련 CSS 파일에 추가 */
+.navbar-menu li a {
+	text-decoration: none;
+	/* 밑줄 제거 */
+	color: inherit;
+	/* 텍스트 색상 상속 */
+}
+
+.floating-toc li {
+	cursor: pointer;
+	padding: 1vh 0;
+	font-weight: bold;
+	color: #333;
+	transition: color 0.3s;
+}
+
+.floating-toc li:hover {
+	color: #007bff;
+}
+
+.navbar {
+	width: 90vw;
+	height: 10vh;
+	/* 화면 높이의 10% */
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 1vh;
+	/* 화면 높이에 비례 */
+	padding: 1vh;
+	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* 네브바 */
+.navbar-menu li {
+	font-size: 1em;
 }
 
 .line-data,
@@ -22,26 +76,87 @@
 	/* 아래 간격을 넓히기 위해 추가 */
 }
 
-.parent {
-	border: 1px transparent black;
-	margin: 10px;
-	padding: 10px;
-	text-align: center;
+/* 목차 스타일 */
+.table-of-contents {
+	position: fixed;
+	bottom: 2vw;
+	right: 2vw;
+	background-color: #f8f9fa;
+	padding: 1vw;
+	border-radius: 8px;
+	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+	font-size: 1.1em;
+	/* 목차 글씨 크기 */
 }
 
-
-.bar-data,
-.wait-data,
-.work-data,
-.wicket-data,
-.line-data,
-.time-data {
-	display: inline-block;
-	width: 500px;
-	height: 400px;
-	background-color: white;
-	border: 1px transparent black;
+.toc-list {
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 1vh;
+	justify-content: center;
 }
+
+.toc-list li {
+	cursor: pointer;
+	font-weight: bold;
+	font-size: 1.2em;
+	padding: 0.5vh 1vw;
+	color: #333;
+	transition: color 0.3s;
+}
+
+.toc-list li:hover {
+	color: #007bff;
+}
+
+.logo {
+	height: 8vh;
+	/* 높이를 비율로 설정 */
+	width: 15vh;
+}
+
+.section-container {
+	margin-top: 1vh;
+	/* 위쪽 여백 */
+	/* 아래쪽 여백 */
+	padding-top: 1vh;
+	padding-bottom: 1vh;
+}
+
+.section {
+	margin-bottom: 3vw;
+	/* 각 섹션 사이 간격 */
+	padding: 2vw;
+	/* 각 섹션 내부 여백 */
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	background-color: #f9f9f9;
+	width: 100%;
+}
+
+/* 첫 번째 섹션 네브바와 간격 추가 */
+.section:first-of-type {
+	margin-top: 4vw;
+}
+
+/* 목차 스타일 (섹션 이름) */
+.section-header {
+	font-size: 2em;
+	font-weight: bold;
+	margin-bottom: 1vw;
+}
+
+/* 각 섹션 내 설명 문구 */
+.section p {
+	font-size: 1.2em;
+	margin-bottom: 1vw;
+}
+
+.sub-section {
+	margin-top: 10vh;
+}
+
 
 .session-control {
 	position: fixed;
@@ -58,4 +173,20 @@
 	/* 패딩 설정 (선택 사항) */
 	box-sizing: border-box;
 	/* 패딩과 테두리를 포함한 전체 너비 및 높이를 설정 */
+}
+
+.chart-title {
+	font-size: 1.6em;
+	font-weight: bold;
+}
+
+.chart {
+	padding: 2vw;
+	font-size: 1.2em;
+	/* 차트 내부 텍스트 크기 */
+}
+
+/* 테이블 등의 기타 텍스트 요소 */
+.table-cell {
+	font-size: 1.1em;
 }
