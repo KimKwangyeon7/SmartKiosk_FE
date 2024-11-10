@@ -87,7 +87,7 @@ const Dashboard = () => {
   // Remaining time state and idle timer setup
   const [remaining, setRemaining] = useState(null);
   const { getRemainingTime, reset } = useIdleTimer({
-    timeout: 300000000, // 1 hour
+    timeout: 300000, // 1 hour
     onIdle: () => handleLogout(),
     throttle: 500,
   });
@@ -140,7 +140,7 @@ const Dashboard = () => {
   });
   // -------------------------------------------------------------
   // 2. 요일별 고객 수
-  const daysOrder = ["월", "화", "수", "목", "금", "토", "일"];
+  const daysOrder = ["월", "화", "수", "목", "금", "토"];
   const [lineData, setLineData] = useState({
     labels: daysOrder,
     datasets: [
@@ -261,7 +261,7 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const response = await getAvgCsnlTime(deptNm);
-        console.log(response.dataBody);
+        //console.log(response.dataBody);
         const labels = Object.keys(response.dataBody.myAvg);
         const localDeptData = Object.values(response.dataBody.myAvg);
         const otherDeptData = Object.values(response.dataBody.otherAvg);
@@ -347,7 +347,7 @@ const Dashboard = () => {
 
         // 그래프 데이터셋 구성
         const myDataset = {
-          label: `${deptNm} ${selectedTask}`,
+          label: `${deptNm} 지점 ${selectedTask}`,
           data: Object.values(myData),
           borderColor: "rgba(75, 192, 192, 1)",
           backgroundColor: "rgba(75, 192, 192, 0.2)",
@@ -355,7 +355,7 @@ const Dashboard = () => {
         };
 
         const otherDataset = {
-          label: `전국 ${selectedTask}`,
+          label: `전국 지점 ${selectedTask}`,
           data: Object.values(otherData),
           borderColor: "rgba(255, 99, 132, 1)",
           backgroundColor: "rgba(255, 99, 132, 0.2)",
@@ -386,7 +386,7 @@ const Dashboard = () => {
           labels,
           datasets: [
             {
-              label: `${deptNm} 업무별 비율`,
+              label: `${deptNm} 지점 업무별 비율`,
               data,
               backgroundColor: [
                 "rgba(255, 99, 132, 0.6)",
@@ -409,7 +409,7 @@ const Dashboard = () => {
     const fetchTimeData = async () => {
       try {
         const response = await getCntByTime(deptNm);
-        //console.log(response.dataBody);
+        console.log(response.dataBody);
 
         // API 응답에서 업무명과 비율 데이터를 추출
         const labels = Object.keys(response.dataBody);
@@ -498,25 +498,24 @@ const Dashboard = () => {
     //-------------------------------------------------------------------------
     // 최근 5년 총 고객 수.
     const fetchYearData = async () => {
+      const response = await getYearCnt(deptNm);
+      //console.log(response.dataBody);
+
+      const list = Object.keys(response.dataBody.my);
+      setList(list);
+
+      const myData = response?.dataBody?.my?.[chosenTask] || {}; // `my` 데이터가 없으면 빈 객체로 대체
+      const otherData = response?.dataBody?.other?.[chosenTask] || {}; // `other` 데이터가 없으면 빈 객체로 대체
+
+      const lb = Object.keys(myData); // `myData`의 키 사용
+      const myYearData = Object.values(myData); // `myData`의 값 사용
+      const otherYearData = Object.values(otherData); // `otherData`의 값 사용
+
+      // 그래프 데이터셋 구성
       try {
-        const response = await getYearCnt(deptNm);
-        //console.log(response.dataBody);
-
-        const list = Object.keys(response.dataBody.my);
-        setList(list);
-
-        // 선택된 업무가 없을 때, 첫 번째 업무를 기본 선택
-        if (!chosenTask && list.length > 0) {
-          setChosenTask(list[0]);
-        }
-        const lb = Object.keys(response.dataBody.my[chosenTask]);
-        const myYearData = Object.values(response.dataBody.my[chosenTask]);
-        const otherYearData = Object.values(response.dataBody.other[chosenTask]);
-
-        // 그래프 데이터셋 구성
         const myYearDataset = {
           label: `${deptNm} ${chosenTask}`,
-          data: Object.values(myYearData),
+          data: Object.values(myYearData || {}), // 데이터가 null 또는 undefined일 경우 빈 객체로 대체
           borderColor: "rgba(75, 192, 192, 1)",
           backgroundColor: "rgba(75, 192, 192, 0.2)",
           tension: 0.3,
@@ -524,14 +523,14 @@ const Dashboard = () => {
 
         const otherYearDataset = {
           label: `전국 ${chosenTask}`,
-          data: Object.values(otherYearData),
+          data: Object.values(otherYearData || {}), // 데이터가 null 또는 undefined일 경우 빈 객체로 대체
           borderColor: "rgba(255, 99, 132, 1)",
           backgroundColor: "rgba(255, 99, 132, 0.2)",
           tension: 0.3,
         };
 
         setYearData({
-          labels: lb,
+          labels: lb || [], // lb가 undefined일 경우 빈 배열로 대체
           datasets: [myYearDataset, otherYearDataset],
         });
       } catch (error) {
@@ -544,7 +543,7 @@ const Dashboard = () => {
         const date = "" + nowYear + nowMonth;
         //console.log(date);
         const response = await getMonthCnt({ deptNm, date });
-        //console.log(response.dataBody);
+        console.log(response.dataBody);
 
         const works = Object.keys(response.dataBody);
         setWorkList(works);
@@ -553,18 +552,17 @@ const Dashboard = () => {
         if (!selectedWork && works.length > 0) {
           setSelectedWork(works[0]);
         }
-        const len = Object.keys(response.dataBody[selectedWork]).length;
-        console.log(len);
-        const label = [];
-        for (let i = 1; i <= len; i++) {
-          label[i - 1] = i;
-        }
+
+        const dataForSelectedWork = response?.dataBody?.[selectedWork] || {}; // 선택된 업무의 데이터가 없을 경우 빈 객체로 대체
+        const len = Object.keys(dataForSelectedWork).length;
+
+        const label = Array.from({ length: len }, (_, i) => i + 1); // 1부터 len까지의 숫자 배열 생성
         //console.log(label);
-        const myMonthData = Object.values(response.dataBody[chosenTask]);
+        const myMonthData = Object.values(response?.dataBody?.[chosenTask] || {});
 
         // 그래프 데이터셋 구성
         const myMonthDataset = {
-          label: `${deptNm} ${selectedWork}`,
+          label: `${deptNm} 지점 ${selectedWork}`,
           data: Object.values(myMonthData),
           borderColor: "rgba(75, 192, 192, 1)",
           backgroundColor: "rgba(75, 192, 192, 0.2)",
@@ -595,7 +593,14 @@ const Dashboard = () => {
     responsive: true,
     plugins: {
       legend: { position: "top" },
-      title: { display: true, text: "업무별 평균 상담 시간 비교" },
+      title: {
+        display: true,
+        text: "업무별 평균 상담 시간",
+        font: {
+          size: 24, // 원하는 크기로 설정 (예: 24)
+          weight: "bold", // 글꼴 두께 조정 (옵션)
+        },
+      },
     },
   };
 
@@ -603,14 +608,38 @@ const Dashboard = () => {
     responsive: true,
     plugins: {
       legend: { position: "top" },
-      title: { display: true, text: "요일별 평균 고객 수" },
+      title: {
+        display: true,
+        text: "요일별 평균 고객 수",
+        font: {
+          size: 24, // 원하는 크기로 설정 (예: 24)
+          weight: "bold", // 글꼴 두께 조정 (옵션)
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        min: 0,
+        max: 25,
+        ticks: {
+          stepSize: 2,
+        },
+      },
     },
   };
   const periodOptions = {
     responsive: true,
     plugins: {
       legend: { position: "top" },
-      title: { display: true, text: `${year}년 분기별 고객 수 (${selectedTask})` },
+      title: {
+        display: true,
+        // text: `${year}년 분기별 고객 수 (${selectedTask})`,
+        font: {
+          size: 24, // 원하는 크기로 설정 (예: 24)
+          weight: "bold", // 글꼴 두께 조정 (옵션)
+        },
+      },
     },
     scales: {
       y: {
@@ -628,7 +657,14 @@ const Dashboard = () => {
     responsive: true,
     plugins: {
       legend: { position: "top" },
-      title: { display: true, text: `${deptNm} 업무별 비율` },
+      title: {
+        display: true,
+        text: `${deptNm} 업무별 비율`,
+        font: {
+          size: 24, // 원하는 크기로 설정 (예: 24)
+          weight: "bold", // 글꼴 두께 조정 (옵션)
+        },
+      },
     },
   };
 
@@ -636,7 +672,14 @@ const Dashboard = () => {
     responsive: true,
     plugins: {
       legend: { position: "top" },
-      title: { display: true, text: `${deptNm} 시간대별 고객 수` },
+      title: {
+        display: true,
+        text: `${deptNm} 시간대별 고객 수`,
+        font: {
+          size: 24, // 원하는 크기로 설정 (예: 24)
+          weight: "bold", // 글꼴 두께 조정 (옵션)
+        },
+      },
     },
   };
 
@@ -644,7 +687,14 @@ const Dashboard = () => {
     responsive: true,
     plugins: {
       legend: { position: "top" },
-      title: { display: true, text: `${deptNm} 창구 비율` },
+      title: {
+        display: true,
+        text: `${deptNm} 창구 비율`,
+        font: {
+          size: 24, // 원하는 크기로 설정 (예: 24)
+          weight: "bold", // 글꼴 두께 조정 (옵션)
+        },
+      },
     },
   };
 
@@ -652,7 +702,14 @@ const Dashboard = () => {
     responsive: true,
     plugins: {
       legend: { position: "top" },
-      title: { display: true, text: "업무별 평균 대기 시간 비교" },
+      title: {
+        display: true,
+        text: "업무별 평균 대기 시간",
+        font: {
+          size: 24, // 원하는 크기로 설정 (예: 24)
+          weight: "bold", // 글꼴 두께 조정 (옵션)
+        },
+      },
     },
   };
 
@@ -660,7 +717,14 @@ const Dashboard = () => {
     responsive: true,
     plugins: {
       legend: { position: "top" },
-      title: { display: true, text: `최근 5년 ${deptNm} 지점 총 고객 수 (${chosenTask})` },
+      title: {
+        display: true,
+        // text: `최근 5년 ${deptNm} 지점 총 고객 수 (${chosenTask})`,
+        font: {
+          size: 24, // 원하는 크기로 설정 (예: 24)
+          weight: "bold", // 글꼴 두께 조정 (옵션)
+        },
+      },
     },
     scales: {
       y: {
@@ -678,15 +742,22 @@ const Dashboard = () => {
     responsive: true,
     plugins: {
       legend: { position: "top" },
-      title: { display: true, text: `${nowYear}년 ${nowMonth}월 고객 수 (${selectedWork})` },
+      title: {
+        display: true,
+        // text: `${nowYear}년 ${nowMonth}월 ${deptNm} 지점 고객 수 (${selectedWork})`,
+        font: {
+          size: 24, // 원하는 크기로 설정 (예: 24)
+          weight: "bold", // 글꼴 두께 조정 (옵션)
+        },
+      },
     },
     scales: {
       y: {
         beginAtZero: true,
-        min: 0,
-        max: 20,
+        min: 0, // y축의 최소값 설정
+        max: 10, // 필요한 경우 적절한 최대값을 설정 (값에 따라 조정)
         ticks: {
-          stepSize: 1,
+          stepSize: 2, // y축 간격 설정
         },
       },
     },
@@ -697,21 +768,25 @@ const Dashboard = () => {
       <button
         key={task}
         onClick={() => setSelectedTask(task)}
-        style={{ fontWeight: selectedTask === task ? "bold" : "normal" }}
+        style={{ fontWeight: selectedTask === task ? "bold" : "normal", fontSize: "lighter" }}
       >
         {task}
       </button>
     ));
-  const renderYearButtons = () =>
-    list.map((tmp) => (
-      <button
-        key={tmp}
-        onClick={() => setChosenTask(tmp)}
-        style={{ fontWeight: chosenTask === tmp ? "bold" : "normal" }}
-      >
-        {tmp}
-      </button>
-    ));
+
+  const renderYearButtons = () => (
+    <select
+      className="small-select"
+      value={chosenTask}
+      onChange={(e) => setChosenTask(e.target.value)}
+    >
+      {list.map((tmp) => (
+        <option key={tmp} value={tmp}>
+          {tmp}
+        </option>
+      ))}
+    </select>
+  );
   const renderMonthButtons = () =>
     workList.map((work) => (
       <button
@@ -728,7 +803,6 @@ const Dashboard = () => {
       <div className="session-control">
         <span>남은 시간: {millisToMinutesAndSeconds(remaining)}</span>
       </div>
-
       {/* Navbar */}
       <div className="navbar">
         <Link to="/">
@@ -748,8 +822,9 @@ const Dashboard = () => {
         <ul>
           <li onClick={() => scrollToSection(section1Ref)}>상담 및 대기 시간</li>
           <li onClick={() => scrollToSection(section2Ref)}>창구 및 고객 비율</li>
-          <li onClick={() => scrollToSection(section3Ref)}>고객 분석</li>
-          <li onClick={() => scrollToSection(section4Ref)}>연도별 고객 수</li>
+          <li onClick={() => scrollToSection(section3Ref)}>연도, 분기별 고객 수</li>
+          <li onClick={() => scrollToSection(section4Ref)}>요일, 시간대별 고객 수</li>
+          <li onClick={() => scrollToSection(section5Ref)}>상세 분석</li>
         </ul>
       </div>
 
@@ -761,122 +836,124 @@ const Dashboard = () => {
             업무별 평균 상담 시간과 평균 대기 시간을 비교하여 고객 한 명당 소요 시간을 예측합니다.
           </p>
           <div className="subsection">
-            <h3>업무별 평균 상담 시간</h3>
-            <Bar
-              data={data}
-              options={{ responsive: true, plugins: { title: { text: "상담 시간" } } }}
-            />
+            {/* <h3>업무별 평균 상담 시간</h3> */}
+            <Bar data={data} options={options} />
           </div>
+          <hr className="chart-divider" />
           <div className="subsection">
-            <h3>업무별 평균 대기 시간</h3>
-            <Bar
-              data={waitData}
-              options={{ responsive: true, plugins: { title: { text: "대기 시간" } } }}
-            />
+            {/* <h3>업무별 평균 대기 시간</h3> */}
+            <Bar data={waitData} options={waitOptions} />
           </div>
         </div>
       </div>
+
       {/* Section 2: 창구 및 고객 비율 */}
-      <div className="section-container"></div>
-      <div ref={section2Ref} className="section">
-        <h2>창구 및 고객 비율</h2>
-        <p>각 업무의 창구 비율과 고객 비율을 파악하여 자원 배분을 최적화합니다.</p>
-        <div className="subsection">
-          <h3>업무별 창구 비율</h3>
-          <Pie
-            data={wicketData}
-            options={{ responsive: true, plugins: { title: { text: "창구 비율" } } }}
-          />
+      <div className="section-container">
+        <div ref={section2Ref} className="section">
+          <h2>창구 및 고객 비율</h2>
+          <p>각 업무의 창구 비율과 고객 비율을 파악하여 자원 배분을 최적화합니다.</p>
+          <div className="subsection pie-charts-container">
+            <div className="chart-container">
+              {/* <h3>업무별 창구 비율</h3> */}
+              <Pie data={wicketData} options={wicketPercentageOptions} />
+            </div>
+            <hr className="chart-divider" />
+            <div className="chart-container">
+              {/* <h3>업무별 고객 비율</h3> */}
+              <Pie data={workData} options={workPercentageOptions} />
+            </div>
+          </div>
         </div>
-        <div className="subsection">
-          <h3>업무별 고객 비율</h3>
-          <Pie
-            data={workData}
-            options={{ responsive: true, plugins: { title: { text: "업무 비율" } } }}
-          />
+      </div>
+
+      <div className="section-container">
+        {/* 연도별 고객 수 섹션 */}
+        <div ref={section3Ref} className="section">
+          <h2>연도, 분기별 총 고객 수 분석</h2>
+          <p>연도별, 분기별 고객 수 추이 분석을 통해 고객 수 변동을 파악합니다.</p>
+          <div className="subsection">
+            <div className="title-bar">
+              <h2 className="chart-title">
+                최근 5년 {deptNm} 지점 총 고객 수 ({chosenTask})
+              </h2>
+              <div className="select-container">{renderYearButtons()}</div>
+            </div>
+            <Bar data={yearData} options={yearOptions} />
+          </div>
+          <hr className="chart-divider" />
+          <div className="subsection">
+            <div className="title-bar">
+              <h2 className="chart-title">분기별 고객 수 분석</h2>
+              <div className="select-container">
+                <select value={year} onChange={(e) => setYear(e.target.value)}>
+                  {[2021, 2022, 2023, 2024].map((y) => (
+                    <option key={y} value={y}>
+                      {y}년
+                    </option>
+                  ))}
+                </select>
+                <select value={selectedTask} onChange={(e) => setSelectedTask(e.target.value)}>
+                  {taskList.map((task) => (
+                    <option key={task} value={task}>
+                      {task}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <Line data={periodData} options={periodOptions} />
+          </div>
         </div>
       </div>
       <div className="section-container">
-        {/* Section 3: 고객 분석 */}
-        <div ref={section3Ref} className="section">
-          <h2>고객 분석</h2>
+        <div ref={section4Ref} className="section">
+          <h2>시간대, 요일별 고객 분포 분석</h2>
           <p>시간대와 요일별 고객 수를 파악하여 고객 방문 패턴을 분석합니다.</p>
           <div className="subsection">
-            <h3>시간대별 고객 수</h3>
-            <Line
-              data={timeData}
-              options={{ responsive: true, plugins: { title: { text: "시간대별 고객 수" } } }}
-            />
+            {/* <h3>시간대별 고객 수</h3> */}
+            <Line data={timeData} options={timeDataOptions} />
           </div>
+          <hr className="chart-divider" />
           <div className="subsection">
-            <h3>요일별 고객 수</h3>
-            <Line
-              data={lineData}
-              options={{ responsive: true, plugins: { title: { text: "요일별 고객 수" } } }}
-            />
+            {/* <h3>요일별 고객 수</h3> */}
+            <Line data={lineData} options={lineOptions} />
           </div>
         </div>
       </div>
 
-      {/* Section 4: 연도별 고객 수 */}
-      <div ref={section4Ref} className="section">
-        <div className="sub-section">
-          <h2>연도별 고객 수</h2>
-          <p>연도별, 분기별 고객 수 추이 분석을 통해 고객 수 변동을 파악합니다.</p>
-          <div className="chart-container">
-            <Bar
-              data={yearData}
-              options={{ responsive: true, plugins: { title: { text: "연도별 고객 수" } } }}
-            />
-            <div>{renderYearButtons()}</div>
-          </div>
-        </div>
-
-        <div className="sub-section">
-          {/* Section 5: 분기별 고객 수 */}
-          <h2>분기별 고객 수</h2>
-          <p>연도별로 분기마다 고객 수를 분석하여 성수기와 비성수기를 파악합니다.</p>
-          <div className="chart-container">
-            <div>
-              <select value={year} onChange={(e) => setYear(e.target.value)}>
+      <div className="section-container">
+        {/* Section 5: 월별 고객 수 - 상세 분석 */}
+        <div ref={section5Ref} className="section">
+          <h2>상세 분석</h2>
+          <p>특정 연도와 월을 선택하여 해당 달의 업무별 고객 수를 상세히 분석합니다.</p>
+          <div className="sub-section">
+            <h2 className="chart-title">월별 고객 수 분석</h2>
+            {/* 셀렉트 박스 3개를 배치하는 컨테이너 */}
+            <div className="select-content">
+              <select value={nowYear} onChange={(e) => setNowYear(e.target.value)}>
                 {[2021, 2022, 2023, 2024].map((y) => (
                   <option key={y} value={y}>
                     {y}년
                   </option>
                 ))}
               </select>
+              <select value={nowMonth} onChange={(e) => setNowMonth(e.target.value)}>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => (
+                  <option key={m} value={m}>
+                    {m}월
+                  </option>
+                ))}
+              </select>
+              <select value={selectedTask} onChange={(e) => setSelectedTask(e.target.value)}>
+                {taskList.map((task) => (
+                  <option key={task} value={task}>
+                    {task}
+                  </option>
+                ))}
+              </select>
             </div>
-            <Line data={periodData} options={periodOptions} />
-            <div>{renderTaskButtons()}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Section 5: 월별 고객 수 - 상세 분석 */}
-      <div ref={section5Ref} className="section">
-        <h2>상세 분석: 월별 고객 수</h2>
-        <p>특정 연도와 월을 선택하여 업무별 고객 수를 상세히 분석합니다.</p>
-        <div className="chart-container">
-          <div>
-            <select value={nowYear} onChange={(e) => setNowYear(e.target.value)}>
-              {[2021, 2022, 2023, 2024].map((y) => (
-                <option key={y} value={y}>
-                  {y}년
-                </option>
-              ))}
-            </select>
-            <select value={nowMonth} onChange={(e) => setNowMonth(e.target.value)}>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => (
-                <option key={m} value={m}>
-                  {m}월
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
             <Line data={monthData} options={monthOptions} />
           </div>
-          <div>{renderMonthButtons()}</div>
         </div>
       </div>
     </div>

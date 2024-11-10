@@ -20,8 +20,7 @@
 }
 
 /* 창구와 키오스크의 크기를 그리드 크기와 동일하게 설정 */
-.counter,
-.kiosk {
+.counter {
 	font-size: 2vw;
 	padding: 10px;
 	border-radius: 5px;
@@ -39,11 +38,37 @@
 	/* 그리드 항목 크기와 동일하게 설정 */
 }
 
+/* 키오스크 색상 지정 */
+.kiosk {
+	font-size: 2vw;
+	padding: 10px;
+	border-radius: 5px;
+	background-color: rgba(255, 182, 193, 0.6);
+	/* 연한 핑크 */
+	color: white;
+	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.3s;
+	width: 95%;
+	height: 85%;
+}
+
 /* 선택된 창구의 크기 및 색상 조정 (클릭 시 조금 커짐) */
 .counter.selected {
 	width: 95%;
 	height: 85%;
 	background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* 업무 유형 텍스트 */
+.counter .task-type {
+	font-weight: bold;
+	color: #000;
+	/* 진한 검정색 */
+	font-size: 1.8vw;
 }
 
 /* 편집 모드에서 선택된 창구 크기 및 색상 조정 */

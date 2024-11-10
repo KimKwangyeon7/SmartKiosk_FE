@@ -1,6 +1,6 @@
 import { axiosWrapper } from "./axiosWrapper";
 
-//번호표 정보 가져오기
+// 업무 버튼 정보 가져오기
 export const getTicketInfoList = async (deptNm) => {
   return axiosWrapper
     .get(`/member/button/${deptNm}`)
@@ -22,7 +22,7 @@ export const issueTicket = async (data) => {
     });
 };
 
-// 번호표 생성
+// 업무 버튼 생성
 export const addButton = async (data) => {
   return axiosWrapper
     .post("/member/button", data)
@@ -32,7 +32,7 @@ export const addButton = async (data) => {
     });
 };
 
-// 번호표 수정
+// 업무 버튼 수정
 export const modifyButton = async (data) => {
   return axiosWrapper
     .patch("/member/button", data)
@@ -52,10 +52,30 @@ export const deleteButton = async (data) => {
     });
 };
 
-// 번호표 좌표 수정
+// 업무 버튼 좌표 수정
 export const modifyButtonLoc = async (deptNm, data) => {
   return axiosWrapper
     .patch(`/member/button/loc?deptNm=${deptNm}`, data)
+    .then((res) => res.data)
+    .catch((err) => {
+      console.error(err);
+    });
+};
+
+// 상담 시작
+export const startCounsel = async (data) => {
+  return axiosWrapper
+    .post("/counsel/start", data)
+    .then((res) => res.data)
+    .catch((err) => {
+      console.error(err);
+    });
+};
+
+// 상담 종료
+export const endCounsel = async (counselId) => {
+  return axiosWrapper
+    .post(`/counsel/end?counselId=${counselId}`)
     .then((res) => res.data)
     .catch((err) => {
       console.error(err);
