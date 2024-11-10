@@ -8,7 +8,8 @@
 	position: fixed;
 	bottom: 2vh;
 	right: 2vw;
-	background-color: #f9f9f9;
+	background-color: rgba(249, 249, 249, 0.2);
+	/* 배경색을 반투명하게 설정 */
 	border-radius: 8px;
 	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
 	padding: 1vh 2vw;
@@ -43,7 +44,7 @@
 }
 
 .navbar {
-	width: 90vw;
+	width: 95vw;
 	height: 10vh;
 	/* 화면 높이의 10% */
 	display: flex;
@@ -110,18 +111,44 @@
 	color: #007bff;
 }
 
+
+
+.selectors {
+	display: flex;
+	gap: 10px;
+	/* 선택 요소 사이 간격 */
+	margin-bottom: 10px;
+	/* 그래프와의 간격 */
+}
+
+.subsection .pie-charts {
+	display: flex;
+	justify-content: space-around;
+	/* 두 개의 차트를 가운데로 정렬 */
+	gap: 20px;
+	/* 두 차트 사이의 간격 */
+}
+
 .logo {
 	height: 8vh;
 	/* 높이를 비율로 설정 */
 	width: 15vh;
 }
 
-.section-container {
-	margin-top: 1vh;
-	/* 위쪽 여백 */
-	/* 아래쪽 여백 */
-	padding-top: 1vh;
-	padding-bottom: 1vh;
+.section-container .pie-charts-container {
+	display: flex;
+	justify-content: space-around;
+	/* 차트를 중앙 정렬하고 간격을 유지 */
+	gap: 20px;
+	/* 차트 간의 간격 설정 */
+}
+
+.chart-container {
+	width: 50%;
+	/* 각 차트 컨테이너의 너비를 부모 요소의 45%로 설정 */
+	max-width: 1000px;
+	/* 차트의 최대 너비 설정 */
+	text-align: center;
 }
 
 .section {
@@ -157,6 +184,14 @@
 	margin-top: 10vh;
 }
 
+.task-select {
+	padding: 3px 6px;
+	/* 셀렉트 박스 내부 여백 조정 */
+	font-size: 0.9rem;
+	/* 글자 크기 조정 */
+	width: 150px;
+	/* 셀렉트 박스 너비 조정 */
+}
 
 .session-control {
 	position: fixed;
@@ -189,4 +224,68 @@
 /* 테이블 등의 기타 텍스트 요소 */
 .table-cell {
 	font-size: 1.1em;
+}
+
+.small-select {
+	padding: 4px 8px;
+	/* 내부 여백 조정 */
+	font-size: 0.8rem;
+	/* 폰트 크기 축소 */
+	width: 150px;
+	/* 셀렉트 박스 너비 설정 */
+	max-width: 100%;
+}
+
+.title-bar {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	/* 제목을 중앙에 배치 */
+	position: relative;
+	/* 오른쪽에 셀렉트 박스를 배치하기 위한 상대 위치 */
+	margin-bottom: 0.5rem;
+	/* 아래에 여백 추가 */
+}
+
+.chart-title {
+	font-size: 1.5rem;
+	/* 타이틀 크기 설정 */
+	font-weight: bold;
+}
+
+.select-container {
+	position: absolute;
+	right: 0;
+	/* 오른쪽 끝에 위치 */
+}
+
+.select-content {
+	position: absolute;
+	right: 70px;
+	/* 오른쪽 끝에서 10px 왼쪽으로 이동 */
+	display: flex;
+	gap: 1rem;
+	/* 셀렉트 박스들 사이 간격 */
+}
+
+.select-content select {
+	padding: 3px 6px;
+	font-size: 0.9rem;
+	width: 120px;
+	max-width: 100%;
+}
+
+.select-container select {
+	padding: 3px 6px;
+	font-size: 0.9rem;
+	width: 120px;
+	max-width: 100%;
+}
+
+.chart-divider {
+	border: none;
+	border-top: 2px solid #ccc;
+	/* 구분선 스타일 */
+	margin: 1.7rem 0;
+	/* 위아래 여백 */
 }

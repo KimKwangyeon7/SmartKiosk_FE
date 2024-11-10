@@ -331,40 +331,54 @@ const KioskScreen = () => {
       )
     );
   };
+  const memberInfo = JSON.parse(localStorage.getItem("memberInfo") || "{}");
 
   return (
     <div className="kiosk-screen">
-      {(isEditMode || isDragMode) && (
-        <div className="session-control">
-          <span>남은 시간: {millisToMinutesAndSeconds(remaining)}</span>
-        </div>
-      )}
+      {(isEditMode || isDragMode) && <div className="session-control"></div>}
       <div className="navbar">
         <img className="logo" src={logo} alt="iM 뱅크" />
         <ul className="navbar-menu">
+          {isLoggedIn && (
+            <>
+              <li>{memberInfo.name ? `${memberInfo.name}님 환영합니다!` : ""}</li>
+              <li>남은 시간: {millisToMinutesAndSeconds(remaining)}</li>
+            </>
+          )}
           <li onClick={isLoggedIn ? handleLogout : () => setIsLoginModalOpen(true)}>
             {isLoggedIn ? "로그아웃" : "로그인"}
           </li>
-          <li>{/* "{memberInfo.name} 님 환영합니다!" */}</li>
         </ul>
-        {isLoggedIn && (
-          <>
-            <button onClick={toggleDragMode}>
-              {isDragMode ? "드래그 모드 종료" : "드래그 모드 시작"}
-            </button>
-            <button onClick={() => setIsEditMode(!isEditMode)}>
-              {isEditMode ? "편집 모드 종료" : "편집 모드 시작"}
-            </button>
-          </>
-        )}
       </div>
-
       <div className="content-container">
         <div className="left-section">
           <img className="banker" src={banker} alt="AI 은행원" />
         </div>
+
         <div className="right-section">
-          <div className={`button-container ${isDragMode ? "grid-background" : ""}`}>
+          <div className="right-section-top">
+            {isLoggedIn && (
+              <div className="mode-buttons">
+                <button className="mode-button" onClick={toggleDragMode}>
+                  {isDragMode ? "드래그 모드 종료" : "드래그 모드 시작"}
+                </button>
+                <button className="mode-button" onClick={() => setIsEditMode(!isEditMode)}>
+                  {isEditMode ? "편집 모드 종료" : "편집 모드 시작"}
+                </button>
+              </div>
+            )}
+
+            <div className="sub-button-container">
+              <button className="sub-service-button" onClick={handleMapLayout}>
+                창구 배치도
+              </button>
+            </div>
+          </div>
+          <div
+            className={`right-section-bottom button-container ${
+              isDragMode ? "grid-background" : ""
+            }`}
+          >
             {ticketInfoList.map((button) => (
               <div
                 key={button.work_dvcd}
@@ -374,7 +388,7 @@ const KioskScreen = () => {
                   left: `${button.left}px`,
                   width: `${button.width}px`,
                   height: `${button.height}px`,
-                  position: "absolute",
+                  position: "relative",
                   cursor: isDragMode ? "move" : "pointer",
                 }}
                 onMouseDown={(e) => isDragMode && !isDragging && startDrag(e, button)}
@@ -546,12 +560,6 @@ const KioskScreen = () => {
             )}
           </div>
         </div>
-        {/* <div className="sub-button-container">
-          <button className="sub-service-button" onClick={handleMapLayout}>
-            창구 배치도
-          </button>
-          <button className="sub-service-button">기타 서비스</button>
-        </div> */}
       </div>
 
       {isLoginModalOpen && (

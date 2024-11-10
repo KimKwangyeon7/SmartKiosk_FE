@@ -20,6 +20,7 @@ const LoginContainer = ({ closeModal, setIsLoggedIn }) => {
     onSuccess: (res) => {
       if (res.dataHeader.successCode === 1) {
         setErrorMessage(res.dataHeader.resultMessage);
+        Swal.fire(`${res.dataHeader.resultMessage}`, "", "error");
       } else {
         // 로컬 스토리지에 memberInfo 및 로그인 여부 저장
         const { memberInfo } = res.dataBody;
@@ -40,10 +41,10 @@ const LoginContainer = ({ closeModal, setIsLoggedIn }) => {
           },
         });
 
-        Toast.fire({
-          icon: "success",
-          title: "성공적으로 로그인되었습니다.",
-        });
+        // Toast.fire({
+        //   icon: "success",
+        //   title: "성공적으로 로그인되었습니다.",
+        // });
 
         setIsLoggedIn(true); // 로그인 상태 설정
         closeModal(); // 모달 닫기

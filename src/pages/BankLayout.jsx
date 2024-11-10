@@ -11,9 +11,10 @@ import {
   moveWicket,
   moveKiosk,
 } from "../api/wicketApi";
-import { getTicketInfoList } from "../api/ticketApi";
+import { getTicketInfoList, startCounsel, endCounsel } from "../api/ticketApi";
 import { logoutUser } from "../api/userApi";
 import { Cookies } from "react-cookie";
+import Swal from "sweetalert2";
 
 const deptNm = "강남";
 
@@ -33,7 +34,8 @@ const BankLayout = () => {
   const containerRef = useRef(null);
   const navigate = useNavigate();
   const cookies = new Cookies();
-  const [startedCounters, setStartedCounters] = useState({});
+  const [counselSessions, setCounselSessions] = useState({});
+  const [isBranch, setIsBranch] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -44,6 +46,17 @@ const BankLayout = () => {
       setCounters(data.layouts.wicketInfo);
       setKiosks(data.kiosks.kioskInfo);
       setCurrentFloor(data.floors[0]);
+
+      const csnls = data.counsels;
+      for (let i = 0; i < csnls.length; i++) {
+        const wd_id = csnls[i].split(" ")[0];
+        const counsel_id = csnls[i].split(" ")[1];
+        //console.log(wd_id + " " + counsel_id);
+        setCounselSessions((prev) => ({
+          ...prev,
+          [wd_id]: counsel_id,
+        }));
+      }
     } catch (error) {
       console.error("데이터 가져오기 실패", error);
     }
@@ -61,6 +74,14 @@ const BankLayout = () => {
   };
 
   useEffect(() => {
+    const loggedIn = localStorage.getItem("isLogIn") === "true";
+    if (loggedIn) {
+      const memberInfo = JSON.parse(localStorage.getItem("memberInfo"));
+      if (memberInfo && memberInfo.role === "BRANCH") {
+        setIsBranch(true);
+      }
+    }
+
     fetchData();
     getWorkList();
     return () => {
@@ -71,11 +92,16 @@ const BankLayout = () => {
   const currentCounters = counters[currentFloor] || {};
   console.log(currentCounters);
   const currentKiosks = kiosks[currentFloor] || [];
-  const gridSize = 6;
+  // 기본 그리드 크기
+  const defaultGridSize = 6;
+
+  // 현재 층의 창구 수에 따라 gridSize 결정
+  const gridSize = Math.max(defaultGridSize, Object.keys(currentCounters).length);
 
   const handleLogout = async () => {
     try {
       await logoutUser();
+      localStorage.clear();
       cookies.remove("accessToken");
       navigate("/");
     } catch (error) {
@@ -87,6 +113,13 @@ const BankLayout = () => {
     setCounters((prev) => {
       // 기존 상태 복사
       const updatedFloorCounters = { ...prev[currentFloor] };
+
+      const targetCoord = `${x},${y}`;
+      if (updatedFloorCounters[targetCoord]) {
+        Swal.fire("이동할 수 없습니다.", "이동하려는 자리에 다른 창구가 이미 있습니다.", "warning");
+        return prev; // 기존 상태를 반환하여 이동을 방지
+      }
+
       let fromCoord = null;
       const counterId = counterName.split(",")[0]; // 아이디만 추출
       const fullCounterName = counterName; // 전체 counterName을 저장
@@ -116,7 +149,7 @@ const BankLayout = () => {
         const data = {
           counterName: fullCounterName,
           from: fromCoord,
-          to: `${x},${y}`,
+          to: targetCoord,
           floor: currentFloor,
         };
         const res = moveWicket(data);
@@ -148,22 +181,6 @@ const BankLayout = () => {
       moveKiosk(data);
       return updatedKiosks;
     });
-  };
-
-  const handleStart = () => {
-    setStartedCounters((prev) => ({
-      ...prev,
-      [selectedCounter]: true,
-    }));
-    console.log(`${selectedCounter} 시작됨`);
-  };
-
-  const handleEnd = () => {
-    setStartedCounters((prev) => ({
-      ...prev,
-      [selectedCounter]: false,
-    }));
-    console.log(`${selectedCounter} 종료됨`);
   };
 
   const toggleEditMode = () => {
@@ -279,6 +296,84 @@ const BankLayout = () => {
     document.addEventListener("mousedown", handleOutsideClick);
   };
 
+  const handleStart = async (coord, e) => {
+    e.stopPropagation();
+    console.log(`창구 ${selectedCounter} 시작됨`);
+
+    const data = {
+      dept_nm: deptNm,
+      wd_num: currentCounters[coord].split(" ")[1].split(",")[0],
+      floor: currentFloor,
+      wd_id: currentCounters[coord].split(" ")[1].split(",")[1],
+    };
+
+    try {
+      const res = await startCounsel(data);
+      // res와 res.dataBody가 정의되어 있는지 확인
+      if (!res || !res.dataBody || res.error) {
+        Swal.fire("대기 중인 고객이 없습니다.", "", "info");
+      } else {
+        const { counsel_id, dept_nm, wd_num, wd_floor, wd_dvcd_nm, cnt } = res.dataBody;
+        console.log(counsel_id);
+
+        const wd_id = currentCounters[coord].split(" ")[1].split(",")[1];
+        console.log(wd_id);
+
+        setCounselSessions((prev) => ({
+          ...prev,
+          [wd_id]: counsel_id,
+        }));
+
+        Swal.fire(
+          `${cnt}번 고객님. ${wd_floor}층 ${wd_num}번 창구로 와주세요!`,
+          `${dept_nm} 지점 ${wd_dvcd_nm}`,
+          "info"
+        );
+        console.log("상담 시작!", res);
+      }
+    } catch (error) {
+      console.error("상담 시작 중 오류 발생:", error);
+      Swal.fire("상담을 시작하는 중 오류가 발생했습니다.", "", "error");
+    }
+
+    setSelectedCounter(null);
+  };
+
+  const handleEnd = async (coord, e) => {
+    e.stopPropagation();
+
+    const wd_id = currentCounters[coord].split(" ")[1].split(",")[1];
+    const wd_num = currentCounters[coord].split(" ")[1].split(",")[0];
+    const counsel_id = counselSessions[wd_id];
+
+    if (!counsel_id) {
+      Swal.fire("진행 중인 상담이 없습니다.", "", "error");
+      return;
+    }
+    try {
+      const res = await endCounsel(counsel_id);
+
+      // 응답이 존재하면 상담 종료 성공으로 간주
+      if (res) {
+        Swal.fire("상담을 종료했습니다!", "", "success");
+        console.log(`창구 ${wd_num} 상담 종료 성공`);
+
+        setCounselSessions((prev) => {
+          const updatedSessions = { ...prev };
+          delete updatedSessions[wd_id];
+          return updatedSessions;
+        });
+      } else {
+        console.log("상담 종료에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("상담 종료 중 오류 발생:", error);
+      Swal.fire("상담 종료 중 오류가 발생했습니다.", "", "error");
+    }
+
+    setSelectedCounter(null);
+  };
+
   const handleOutsideClick = (e) => {
     if (containerRef.current && !containerRef.current.contains(e.target)) {
       handleSave();
@@ -323,9 +418,20 @@ const BankLayout = () => {
     if (editMode) {
       // 이미 선택된 창구를 다시 클릭할 경우 선택 해제
       if (selectedCounter === coord) {
+        console.log(`편집 모드 - 창구 ${coord} 선택 시 작업 없음`);
         setSelectedCounter(null); // 선택 해제
       } else {
         setSelectedCounter(coord); // 선택된 창구 설정
+        console.log(`창구 ${coord}가 선택됨`);
+      }
+    } else {
+      // 이미 선택된 창구를 다시 클릭할 경우 선택 해제
+      if (selectedCounter === coord) {
+        console.log(`일반 모드 - 창구 ${coord} 선택 시 작업 없음`);
+        setSelectedCounter(null); // 선택 해제
+      } else {
+        setSelectedCounter(coord); // 선택된 창구 설정
+        console.log(`창구 ${coord}가 선택됨`);
       }
     }
   };
@@ -445,8 +551,12 @@ const BankLayout = () => {
         </Link>
         <ul className="navbar-menu">
           <li>
+            {}
             <Link to="#" onClick={handleLogout}>
               로그아웃
+            </Link>
+            <Link to="#" onClick={handleLogout}>
+              로그인
             </Link>
           </li>
         </ul>
@@ -605,15 +715,6 @@ const BankLayout = () => {
                           }
                           onClick={() => handleCounterClick(coord)}
                         >
-                          {selectedCounter === coord && !editMode && (
-                            <div className="counter-actions">
-                              {startedCounters[coord] ? (
-                                <button onClick={handleEnd}>종료</button>
-                              ) : (
-                                <button onClick={handleStart}>시작</button>
-                              )}
-                            </div>
-                          )}
                           {editMode && selectedCounter === coord && isEditing ? (
                             <>
                               {/* 창구 이름을 텍스트 박스로 표시 */}
@@ -652,9 +753,13 @@ const BankLayout = () => {
                             <>
                               {/* 창구 이름과 업무 종류 표시 */}
                               <div>{currentCounters[coord].split(",")[0]}</div>
-                              <div style={{ fontSize: "smaller", color: "gray" }}>
+                              <div style={{ fontSize: "bigger", color: "gray" }}>
                                 {currentCounters[coord].split(",")[2]}
                               </div>
+                              {/* 상담 중 표시 */}
+                              {counselSessions[currentCounters[coord].split(",")[1]] && (
+                                <div style={{ fontSize: "smaller", color: "red" }}>상담 중</div>
+                              )}
                             </>
                           )}
                           {editMode && selectedCounter === coord && (
@@ -679,8 +784,8 @@ const BankLayout = () => {
 
                           {!editMode && selectedCounter === coord && (
                             <div className="counter-actions">
-                              <button onClick={handleStart}>시작</button>
-                              <button onClick={handleEnd}>종료</button>
+                              <button onClick={(e) => handleStart(coord, e)}>시작</button>
+                              <button onClick={(e) => handleEnd(coord, e)}>종료</button>
                             </div>
                           )}
                         </div>

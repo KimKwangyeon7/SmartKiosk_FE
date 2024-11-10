@@ -5,86 +5,6 @@
   font-style: normal;
 }
 
-.kiosk-screen {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100vw;
-  align-items: center;
-  justify-content: center;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.navbar {
-  width: 90vw;
-  height: 10vh;
-  /* 화면 높이의 10% */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 2vh;
-  /* 화면 높이에 비례 */
-  padding: 1vh;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.logo {
-  height: 8vh;
-  /* 높이를 비율로 설정 */
-  width: auto;
-}
-
-.left-section {
-  display: flex;
-  align-items: flex-end;
-  width: 40vw;
-  /* 화면 너비의 40% */
-  height: 80vh;
-  /* 화면 높이의 80% */
-}
-
-.banker {
-  width: 90%;
-  /* left-section에 맞게 */
-  height: auto;
-  object-fit: contain;
-}
-
-.button-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12vw, 1fr));
-  /* 자동으로 크기 조절 */
-  gap: 1vh;
-  width: 50vw;
-  /* 화면 너비의 50% */
-  height: auto;
-  padding: 1vh;
-}
-
-.service-button-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.service-button {
-  font-size: 2.5vh;
-  /* 글자 크기를 화면 비율로 */
-  padding: 1vh;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  border-radius: 0.5vw;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-}
-
-.service-button:hover {
-  transform: scale(1.05);
-}
-
 .waiting-info {
   font-size: 1.5vh;
   color: #666;
@@ -94,7 +14,7 @@
   display: flex;
   gap: 2vw;
   list-style: none;
-  font-size: 3vh;
+  font-size: 1.3vh;
 }
 
 .navbar-menu li {
@@ -103,97 +23,8 @@
   font-size: 2.5vh;
 }
 
-.content-container {
-  display: flex;
-  width: 100%;
-  height: calc(100vh - 10vh);
-  /* navbar를 제외한 화면 높이 */
-}
 
-.left-section {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  width: 40%;
-  height: 100%;
-}
 
-.left-section {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  width: 60%;
-  height: 100%;
-}
-
-.banker {
-  width: auto;
-  height: 80%;
-  /* 아래로 조금 내려서 하단에 맞춰진 느낌 제공 */
-  object-fit: cover;
-  align-self: flex-end;
-  /* 부모 컨테이너의 하단에 고정 */
-}
-
-.sub-button-container {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  width: 60%;
-  height: 30%;
-}
-
-.button-container {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  grid-template-rows: repeat(10, 1fr);
-  gap: 1vw;
-  width: 50vw;
-  height: 70vh;
-  position: relative;
-}
-
-.service-button-wrapper {
-  width: 15vw;
-  /* 화면 너비의 비율에 따라 */
-  height: 7vh;
-  /* 화면 높이의 비율에 따라 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  margin: 1vh;
-  /* 화면 비율에 따라 여백을 설정 */
-}
-
-.service-button {
-  font-size: 2.5vh;
-  /* 화면 높이에 비례하여 글자 크기 조정 */
-  padding: 1vh 1vw;
-  /* 상하, 좌우 여백 설정 */
-  border-radius: 0.5vw;
-  /* 버튼 모서리 둥글기 */
-  width: 100%;
-  /* 부모 컨테이너에 맞춤 */
-  height: 100%;
-  /* 부모 컨테이너에 맞춤 */
-  text-align: center;
-  background-color: #ffffff;
-  /* 기본 배경색 */
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.service-button:hover {
-  background-color: #f0f0f0;
-  transform: scale(1.05);
-  /* hover 시 약간 확대 효과 */
-}
-
-.service-button h1 {
-  font-size: 1.5vh;
-  margin: 0;
-}
 
 .waiting-info {
   font-size: 1.2vh;
@@ -237,6 +68,7 @@
 }
 
 .modal-content {
+  position: relative;
   background: white;
   padding: 2vh 2vw;
   border-radius: 1vw;
@@ -246,7 +78,7 @@
 }
 
 .close-button {
-  position: absolute;
+  position: absolut0e;
   top: 1vh;
   right: 1vw;
   background: none;
@@ -298,4 +130,165 @@
   background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
     linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px);
   background-size: 2vw 2vw;
+}
+
+.kiosk-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  align-items: center;
+  justify-content: flex-start;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Navbar */
+.navbar {
+  width: 95vw;
+  height: 20vh;
+  /* 전체 높이의 20% */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 2vh;
+  padding: 1vh;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  height: 8vh;
+  width: auto;
+}
+
+/* Content Container */
+.content-container {
+  display: flex;
+  width: 100%;
+  height: 80vh;
+  /* 남은 80% */
+}
+
+/* Left Section */
+.left-section {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 50%;
+  /* 전체 너비의 40% */
+  height: 100%;
+  /* 부모 높이 100% */
+}
+
+.banker {
+  width: auto;
+  height: 80%;
+  object-fit: contain;
+  align-self: flex-end;
+}
+
+/* Right Section */
+.right-section {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  /* 전체 너비의 60% */
+  height: 100%;
+}
+
+.right-section-top {
+  width: 100%;
+  height: 25%;
+  /* 오른쪽 섹션의 25% */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f8f8;
+}
+
+.right-section-bottom {
+  width: 100%;
+  height: 75%;
+  /* 오른쪽 섹션의 75% */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12vw, 1fr));
+  gap: 1vh;
+  padding: 1vh;
+}
+
+.service-button-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.service-button {
+  font-size: 2.5vh;
+  padding: 1vh;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  border-radius: 0.5vw;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.service-button:hover {
+  transform: scale(1.05);
+}
+
+.right-section-top {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  /* 자식 요소가 가로로 전체 너비를 차지하도록 */
+  justify-content: flex-start;
+  padding: 1rem;
+  background-color: #ffffff;
+  /* 배경색 명시적으로 지정 */
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.mode-button {
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: #4b9cd3;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.mode-button:hover {
+  background-color: #357ab8;
+}
+
+.sub-button-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.sub-service-button {
+  font-size: 1.2rem;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.sub-service-button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
 }

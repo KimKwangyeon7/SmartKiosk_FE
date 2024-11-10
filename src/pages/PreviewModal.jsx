@@ -36,22 +36,14 @@ const PreviewModal = ({ data, onClose }) => {
         </p>
 
         <hr className="divider" />
-        <div style={{ textAlign: "left", textIndent: "1em", fontSize: "14px" }}>
-          <p style={{ margin: "5px 0" }}>■ iM뱅크 {data.branchName}입니다.</p>
-          <p style={{ margin: "5px 0" }}>■ 대기번호 순으로 처리하오니</p>
-          <p style={{ margin: "5px 0", paddingLeft: "1.2em" }}>잠시만 기다려 주십시오</p>
-          <p style={{ margin: "5px 0" }}>■ 번호 호출 후 30초 이내에</p>
-          <p style={{ margin: "5px 0", paddingLeft: "1.2em" }}>오지 않으시면 다음 번호로 넘어갈</p>
-          <p style={{ margin: "5px 0", paddingLeft: "1.2em" }}>수 있습니다.</p>
-          <p style={{ margin: "5px 0" }}>■ QR 코드를 통해 호출 알림을</p>
-          <p style={{ margin: "5px 0", paddingLeft: "1.2em" }}>iM뱅크 어플로 받으실 수 있습니다.</p>
+        <div className="preview-text">
+          <p>iM뱅크 {data.branchName} 지점입니다.</p>
+          <p>대기번호 순으로 처리하오니 잠시만 기다려 주십시오.</p>
+          <p>번호 호출 후 30초 이내에 오지 않으시면 다음 번호로 넘어갈 수 있습니다.</p>
+          <p>QR 코드를 통해 호출 알림을 iM뱅크 어플로 받으실 수 있습니다.</p>
         </div>
-        <img
-          className="qr"
-          src={qr}
-          alt="qr 코드"
-          style={{ width: "100px", height: "auto", marginTop: "10px" }}
-        />
+        <hr className="divider" />
+        <img className="qr" src={qr} alt="qr 코드" />
       </div>
     </div>
   );
