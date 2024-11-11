@@ -4,32 +4,33 @@
 	left: 0;
 	width: 100%;
 	height: 100%;
-	padding: 5vh 0;
-	/* 상하단에 5vh 여백 추가 */
+	padding: 2vh 0;
+	/* 상하단 여백 줄임 */
 	background-color: rgba(0, 0, 0, 0.5);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	box-sizing: border-box;
-	/* 패딩이 전체 크기에 포함되도록 설정 */
 	z-index: 1000;
 }
 
 .modal-content {
 	position: relative;
 	background-color: white;
-	padding: 20px;
+	padding: 15px;
+	/* 전체 패딩 줄임 */
 	border-radius: 8px;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-	width: 8cm;
+	width: 7.5cm;
+	/* 너비 조정 */
 	max-width: 100%;
 	box-sizing: border-box;
 }
 
 .close-button {
 	position: absolute;
-	top: 10px;
-	right: 10px;
+	top: 8px;
+	right: 8px;
 	background: none;
 	border: none;
 	font-size: 1.5rem;
@@ -38,57 +39,58 @@
 
 .logo {
 	width: 100%;
-	max-width: 5cm;
-	/* 로고의 최대 너비를 고정 */
-	margin-bottom: 10px;
+	max-width: 4.5cm;
+	/* 로고 너비 줄임 */
+	margin-bottom: 8px;
 }
 
 h1 {
-	font-size: 3.5rem;
-	/* 호출번호 글자 크기 고정 */
+	font-size: 3rem;
+	/* 호출번호 글자 크기 줄임 */
 	margin: 0;
 }
 
 .highlighted-text {
-	font-size: 1.8rem;
+	font-size: 1.6rem;
 	font-weight: bold;
 }
 
 .divider {
 	border: none;
-	border-top: 2px solid #ccc;
-	margin: 10px 0;
+	border-top: 1px solid #ccc;
+	margin: 8px 0;
 	width: 100%;
-	align-self: center;
 }
 
 .qr {
-	width: 3cm;
+	width: 2.8cm;
+	/* QR 코드 크기 조정 */
 	height: auto;
-	margin-top: 20px;
-	/* 상단 여백 추가 */
-	margin-bottom: 10px;
-	/* 하단 여백 추가 */
+	margin-top: 15px;
+	/* 상단 여백 줄임 */
+	margin-bottom: 8px;
+	/* 하단 여백 줄임 */
 }
 
-
 .modal-content p {
-	font-size: 1.2rem;
-	/* 본문 텍스트 크기 고정 */
-	margin: 5px 0;
+	font-size: 1.1rem;
+	/* 본문 텍스트 크기 조정 */
+	margin: 4px 0;
+	/* 본문 간격 줄임 */
 }
 
 .modal-content strong {
-	font-size: 1.2rem;
-	/* 강조 텍스트 크기 고정 */
+	font-size: 1.1rem;
+	/* 강조 텍스트 크기 조정 */
 }
 
 .preview-text p {
 	position: relative;
-	padding-left: 1.5em;
-	/* 들여쓰기 공간 */
-	margin: 5px 0;
-	font-size: 14px;
+	padding-left: 1.2em;
+	/* 들여쓰기 공간 줄임 */
+	margin: 3px 0;
+	/* 문단 간격 줄임 */
+	font-size: 13px;
 	text-align: left;
 }
 
@@ -97,4 +99,5 @@ h1 {
 	position: absolute;
 	left: 0;
 	color: black;
+	font-size: 0.8rem;
 }
