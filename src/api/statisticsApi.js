@@ -98,3 +98,13 @@ export const getMonthCnt = async (data) => {
       throw new Error("통계 가져오기 실패");
     });
 };
+
+export const getDailyTalk = async (deptNm) => {
+  return axiosWrapper
+    .post(`/statistics/talk?deptNm=${deptNm}`)
+    .then((res) => res.data)
+    .catch((err) => {
+      console.error(err);
+      throw new Error("통계 가져오기 실패");
+    });
+};

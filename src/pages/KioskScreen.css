@@ -14,7 +14,7 @@
   display: flex;
   gap: 2vw;
   list-style: none;
-  font-size: 1.3vh;
+  font-size: 1.0rem;
 }
 
 .navbar-menu li {
@@ -178,21 +178,22 @@
   background-repeat: no-repeat;
 }
 
-/* Navbar */
+
 .navbar {
   width: 95vw;
-  height: 20vh;
-  /* 전체 높이의 20% */
+  height: 25vh;
+  /* 높이를 약간 증가 */
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 2vh;
-  padding: 1vh;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 1vh 5vh;
+  /* 좌우 여백을 약간 추가 */
+  box-shadow: 5px 5px 7px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
-  height: 8vh;
+  height: 25vh;
   width: auto;
 }
 
@@ -204,22 +205,55 @@
   /* 남은 80% */
 }
 
-/* Left Section */
 .left-section {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 60%;
+}
+
+.carousel-container {
+  height: 30%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  /* 배경색 */
+  border-radius: 10px;
+  /* 둥근 모서리 */
+  /* 그림자 추가 */
+  margin: 10px;
+  /* 외부 여백 */
+}
+
+.carousel-slide {
+  background-color: #e8f8ff;
+  /* 하늘색 계열 배경색 */
+  /* 슬라이드 배경색 */
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 0 10px;
+  white-space: pre-wrap;
+  /* 텍스트 줄바꿈 */
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+
+.banker-container {
+  height: 80%;
+  /* 하단 영역 */
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  width: 50%;
-  /* 전체 너비의 40% */
-  height: 100%;
-  /* 부모 높이 100% */
 }
 
 .banker {
   width: auto;
-  height: 80%;
+  height: 100%;
   object-fit: contain;
-  align-self: flex-end;
 }
 
 /* Right Section */
@@ -228,10 +262,11 @@
   flex-direction: column;
   width: 50%;
   /* 전체 너비의 60% */
-  height: 100%;
+  height: 90%;
 }
 
 .right-section-top {
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import BigFontToggle from "./Common/BigFontToggle";
 import banker from "../assets/ai1.png";
 import logo from "../assets/logo.svg";
 import "./KioskScreen.css";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import LoginContainer from "../components/LoginContainer";
 import {
   getTicketInfoList,
@@ -14,12 +13,13 @@ import {
   modifyButtonLoc,
 } from "../api/ticketApi";
 import { logoutUser } from "../api/userApi";
+import { getDailyTalk } from "../api/statisticsApi";
 import Swal from "sweetalert2";
 import PreviewModal from "./PreviewModal";
 import { Cookies } from "react-cookie";
 import { useIdleTimer } from "react-idle-timer";
+import CarouselComponent from "../components/CarouselComponent";
 
-const gridSize = 20;
 const KioskScreen = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -43,6 +43,7 @@ const KioskScreen = () => {
   const [remaining, setRemaining] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isBranch, setIsBranch] = useState(false);
+  const [carouselData, setCarouselData] = useState([]);
   const { getRemainingTime, reset } = useIdleTimer({
     timeout: 300000,
     onIdle: () => handleLogout(),
@@ -80,13 +81,39 @@ const KioskScreen = () => {
       }
     }
 
+    const fetchCarouselData = async () => {
+      try {
+        const data = await getDailyTalk(dept_name);
+        // API 응답 데이터를 각 항목별 메시지로 변환
+        const updatedCarouselData = [
+          { message: `일주일 중 가장 방문자 수가 많은 요일은 ${data.dataBody.day}요일입니다.` },
+          {
+            message: `${dept_name} 지점의 오늘 방문자 수는 ${data.dataBody.visited}명입니다.`,
+          },
+          { message: `현재 창구 이용 평균 대기 시간은 ${data.dataBody.waitAvg}분입니다.` },
+          { message: ` ${data.dataBody.busyTime}시 이후로 대기 인원이 줄어들 가능성이 높습니다.` },
+          {
+            message: `금일 업무 마감 시간은 ${data.dataBody.closeTime.slice(
+              0,
+              2
+            )}시 ${data.dataBody.closeTime.slice(2)}분입니다. 미리 업무를 준비해주세요!`,
+          },
+        ];
+        setCarouselData(updatedCarouselData);
+      } catch (error) {
+        console.error("통계 데이터를 가져오지 못했습니다:", error);
+      }
+    };
+
+    fetchCarouselData();
+
     fetchTicketInfoList(dept_name);
     const interval = setInterval(() => {
       setRemaining(getRemainingTime());
     }, 500);
     return () => clearInterval(interval);
   }, [getRemainingTime, refresh]);
-  //setRefresh((refresh) => refresh * -1);
+
   const fetchTicketInfoList = async (deptNm) => {
     try {
       const ticketList = await getTicketInfoList(deptNm);
@@ -354,7 +381,12 @@ const KioskScreen = () => {
       </div>
       <div className="content-container">
         <div className="left-section">
-          <img className="banker" src={banker} alt="AI 은행원" />
+          <div className="carousel-container">
+            <CarouselComponent carouselData={carouselData} />
+          </div>
+          <div className="banker-container">
+            <img className="banker" src={banker} alt="AI 은행원" />
+          </div>
         </div>
 
         <div className="right-section">
@@ -363,19 +395,51 @@ const KioskScreen = () => {
             style={{
               display: "flex",
               flexDirection: "column",
-              alignItems: "flex-end", // 내부 요소들을 오른쪽에 정렬
+              alignItems: "flex-end",
             }}
           >
+            {/* 항상 위에 위치하는 창구 배치도 버튼 */}
+            <div
+              className="sub-button-container"
+              style={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "flex-end",
+                paddingRight: "20px",
+              }}
+            >
+              <button
+                className="sub-service-button"
+                onClick={handleMapLayout}
+                style={{
+                  width: "92%",
+                  height: "100px",
+                  backgroundColor: "rgba(200, 200, 200, 0.3)",
+                  color: "#333",
+                  fontSize: "18px",
+                  fontWeight: "bold",
+                  borderRadius: "12px",
+                  cursor: "pointer",
+                  border: "2px solid rgba(200, 200, 200, 0.5)",
+                  padding: "10px",
+                  marginTop: "0px", // 살짝 위로 올리기 위한 간격 조정
+                }}
+              >
+                창구 배치도
+              </button>
+            </div>
+
+            {/* 조건부로 나타나는 모드 및 추가 버튼들 */}
             {isLoggedIn && isBranch && (
               <div
                 className="mode-buttons"
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "flex-end", // 오른쪽에 정렬
-                  gap: "10px", // 각 버튼 사이 간격
-                  marginTop: "40px", // 내비게이션 바와의 간격
-                  paddingRight: "20px", // 오른쪽으로 살짝 이동
+                  justifyContent: "flex-end",
+                  gap: "10px",
+                  marginTop: "20px",
+                  paddingRight: "20px",
                 }}
               >
                 {isEditMode && !isAddingButton && isBranch && (
@@ -485,41 +549,8 @@ const KioskScreen = () => {
                 </div>
               </div>
             )}
-
-            <div
-              className="sub-button-container"
-              style={{
-                marginTop: "50px",
-                width: "100%",
-                display: "flex",
-                justifyContent: "flex-end",
-                paddingRight: "20px", // 오른쪽 마진 동일하게 적용
-              }}
-            >
-              <button
-                className="sub-service-button"
-                onClick={handleMapLayout}
-                style={{
-                  width: "92%",
-                  height: "80px",
-                  backgroundColor: "rgba(173, 216, 230, 0.3)", // 연한 민트색 배경
-                  color: "#000", // 검은색 글자
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  borderRadius: "12px",
-                  cursor: "pointer",
-                  border: "2px solid rgba(173, 216, 230, 0.5)", // 연한 민트색 테두리
-                }}
-              >
-                창구 배치도
-              </button>
-            </div>
           </div>
-          <div
-            className={`right-section-bottom button-container ${
-              isDragMode ? "grid-background" : ""
-            }`}
-          >
+          <div className="right-section-bottom button-container">
             {ticketInfoList.map((button) => (
               <div
                 key={button.work_dvcd}

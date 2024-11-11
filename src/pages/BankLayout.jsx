@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import "./BankLayout.css";
 import {
   getWicketInfoList,
-  sendUpdatedWicketInfoList,
   createWicket,
   deleteWicket,
   updateWicket,
@@ -514,7 +513,7 @@ const BankLayout = () => {
       try {
         // 서버에 현재 층 삭제 요청 전송
         await deleteFloor(currentFloor);
-        console.log(`층 ${currentFloor} 정보가 서버에 전달되었습니다.`);
+        //console.log(`층 ${currentFloor} 정보가 서버에 전달되었습니다.`);
 
         // 최신 데이터를 서버에서 다시 가져와 상태 업데이트
         fetchData(); // 최신 층 데이터와 상태를 갱신하는 함수 호출
@@ -598,7 +597,7 @@ const BankLayout = () => {
 
       {currentFloor && (
         <>
-          <h1>{currentFloor}층 창구 배치도</h1>
+          <h1>층{currentFloor} 창구 배치도</h1>
           <div
             style={{
               display: "flex",
@@ -864,7 +863,7 @@ const BankLayout = () => {
                   className={`floor-button ${currentFloor === floor ? "selected" : ""}`}
                   style={{ fontWeight: "bold" }}
                 >
-                  {floor}층
+                  층{floor}
                 </button>
               </div>
             ))}

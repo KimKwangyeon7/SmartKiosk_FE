@@ -145,14 +145,14 @@ const Dashboard = () => {
     labels: daysOrder,
     datasets: [
       {
-        label: deptNm + " 요일별 평균 고객 수",
+        label: deptNm + " 지점 요일별 평균 고객 수",
         data: [],
         backgroundColor: "rgba(153, 102, 255, 0.6)",
         borderColor: "rgba(153, 102, 255, 1)",
         fill: false,
       },
       {
-        label: deptNm + "전국 요일별 평균 고객 수",
+        label: "전국 요일별 평균 고객 수",
         data: [],
         backgroundColor: "rgba(153, 102, 255, 0.6)",
         borderColor: "rgba(153, 102, 255, 1)",
@@ -176,7 +176,7 @@ const Dashboard = () => {
     labels: [],
     datasets: [
       {
-        label: `${deptNm} 업무별 비율`,
+        label: `${deptNm} 지점 업무별 비율`,
         data: [],
         backgroundColor: colors.고객비율,
       },
@@ -188,7 +188,7 @@ const Dashboard = () => {
     labels: [],
     datasets: [
       {
-        label: `${deptNm} 시간대별 고객 수`,
+        label: `${deptNm} 지점 시간대별 고객 수`,
         data: [],
         backgroundColor: colors.시간대,
       },
@@ -201,7 +201,7 @@ const Dashboard = () => {
     labels: [],
     datasets: [
       {
-        label: `${deptNm} 업무별 비율`,
+        label: `${deptNm} 지점 업무별 비율`,
         data: [],
         backgroundColor: [
           "rgba(255, 99, 132, 0.6)",
@@ -221,7 +221,7 @@ const Dashboard = () => {
     labels: [],
     datasets: [
       {
-        label: deptNm + " 평균 대기 시간 (분)",
+        label: deptNm + " 지점 평균 대기 시간 (분)",
         data: [],
         backgroundColor: "rgba(75, 192, 192, 0.6)",
         barThickness: 40,
@@ -270,7 +270,7 @@ const Dashboard = () => {
           labels,
           datasets: [
             {
-              label: deptNm + " 평균 상담 시간 (분)",
+              label: deptNm + " 지점 평균 상담 시간 (분)",
               data: localDeptData,
               backgroundColor: "rgba(75, 192, 192, 0.6)",
               barThickness: 40,
@@ -304,7 +304,7 @@ const Dashboard = () => {
           labels: daysOrder,
           datasets: [
             {
-              label: deptNm + " 요일별 평균 고객 수",
+              label: deptNm + " 지점 요일별 평균 고객 수",
               data: mySortedData,
               backgroundColor: "rgba(153, 102, 255, 0.6)",
               borderColor: "rgba(153, 102, 255, 1)",
@@ -409,7 +409,7 @@ const Dashboard = () => {
     const fetchTimeData = async () => {
       try {
         const response = await getCntByTime(deptNm);
-        console.log(response.dataBody);
+        //console.log(response.dataBody);
 
         // API 응답에서 업무명과 비율 데이터를 추출
         const labels = Object.keys(response.dataBody);
@@ -419,7 +419,7 @@ const Dashboard = () => {
           labels,
           datasets: [
             {
-              label: `${deptNm} 업무별 비율`,
+              label: `${deptNm} 지점 시간대별 비율`,
               data,
               backgroundColor: ["rgba(255, 99, 132, 0.6)"],
             },
@@ -446,7 +446,7 @@ const Dashboard = () => {
           labels,
           datasets: [
             {
-              label: `${deptNm} 창구 비율`,
+              label: `${deptNm} 지점 창구 비율`,
               data,
               backgroundColor: [
                 "rgba(255, 99, 132, 0.6)",
@@ -478,7 +478,7 @@ const Dashboard = () => {
           labels,
           datasets: [
             {
-              label: deptNm + " 평균 대기 시간 (분)",
+              label: deptNm + " 지점 평균 대기 시간 (분)",
               data: localDeptData,
               backgroundColor: "rgba(75, 192, 192, 0.6)",
               barThickness: 40,
@@ -544,7 +544,7 @@ const Dashboard = () => {
         const date = "" + nowYear + nowMonth;
         //console.log(date);
         const response = await getMonthCnt({ deptNm, date });
-        console.log(response.dataBody);
+        //console.log(response.dataBody);
 
         const works = Object.keys(response.dataBody);
         setWorkList(works);

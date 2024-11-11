@@ -22,12 +22,12 @@ const createAxiosInstance = (baseURL) => {
       const accessToken = cookies.get("accessToken");
 
       // accessToken이 잘 가져와지는지 확인하는 로그
-      console.log("Access Token:", accessToken);
+      //console.log("Access Token:", accessToken);
 
       if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
       } else {
-        console.warn("Access token is missing in the request headers.");
+        //console.warn("Access token is missing in the request headers.");
       }
 
       return config;

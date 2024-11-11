@@ -130,9 +130,8 @@
 }
 
 .logo {
-	height: 8vh;
-	/* 높이를 비율로 설정 */
-	width: 15vh;
+	height: 25vh;
+	width: auto;
 }
 
 .section-container .pie-charts-container {
