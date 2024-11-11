@@ -736,8 +736,23 @@ const BankLayout = () => {
                         className="kiosk"
                         draggable={editMode}
                         onDragStart={(e) => e.dataTransfer.setData("kiosk", coord)}
+                        style={{
+                          backgroundColor:
+                            currentFloor === "1"
+                              ? currentKiosks.indexOf(coord) === 0
+                                ? "lightblue" // 키오스크
+                                : currentKiosks.indexOf(coord) === 1
+                                ? "lightgreen" // 입구
+                                : "lightgray" // 출구
+                              : "lightcoral", // 계단 (2층 이상)
+                          color: "black", // 텍스트 색상 설정
+                          fontWeight: "bold", // 텍스트 굵게
+                          padding: "5px", // 패딩 추가
+                          textAlign: "center", // 텍스트 중앙 정렬
+                        }}
                       >
-                        {currentKiosks.indexOf(coord) === 0 && currentFloor ? "키오스크" : "출구"}
+                        {currentFloor === 1 && "키오스크"}
+                        {currentFloor !== 1 && "계단"}
                       </div>
                     ) : (
                       currentCounters[coord] && (
