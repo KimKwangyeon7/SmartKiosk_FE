@@ -75,6 +75,8 @@ const KioskScreen = () => {
         setIsEditMode(false);
         setIsDragMode(false);
         setIsBranch(true);
+      } else {
+        cookies.remove("accessToken");
       }
     }
 
