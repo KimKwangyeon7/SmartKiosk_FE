@@ -20,8 +20,14 @@ const createAxiosInstance = (baseURL) => {
   instance.interceptors.request.use(
     (config) => {
       const accessToken = cookies.get("accessToken");
+
+      // accessToken이 잘 가져와지는지 확인하는 로그
+      console.log("Access Token:", accessToken);
+
       if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
+      } else {
+        console.warn("Access token is missing in the request headers.");
       }
 
       return config;
@@ -37,9 +43,10 @@ const createAxiosInstance = (baseURL) => {
       return response;
     },
     (error) => {
-      // 401 에러 처리: 세션 종료 및 로그아웃 처리
+      // 401 또는 403 에러 처리: 세션 종료 및 로그아웃 처리
       if (error.response?.status === 401 || error.response?.status === 403) {
-        handleLogout();
+        console.warn("Unauthorized or forbidden request - logging out.");
+        handleLogout(); // 로그아웃 함수 호출
       }
       return Promise.reject(error);
     }
@@ -47,6 +54,7 @@ const createAxiosInstance = (baseURL) => {
 
   return instance;
 };
+
 // 로그아웃 처리 함수
 const handleLogout = () => {
   const cookies = new Cookies();
