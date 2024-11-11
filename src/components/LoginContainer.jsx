@@ -6,8 +6,10 @@ import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
 import * as u from "./UserContainerStyle";
 import Swal from "sweetalert2";
+import { useCookies } from "react-cookie";
 
 const LoginContainer = ({ closeModal, setIsLoggedIn }) => {
+  const [cookies, setCookie] = useCookies(["accessToken"]);
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,9 +25,12 @@ const LoginContainer = ({ closeModal, setIsLoggedIn }) => {
         Swal.fire(`${res.dataHeader.resultMessage}`, "", "error");
       } else {
         // 로컬 스토리지에 memberInfo 및 로그인 여부 저장
-        const { memberInfo } = res.dataBody;
+        const { memberInfo, accessToken } = res.dataBody; // 응답에서 accessToken 가져오기
         localStorage.setItem("memberInfo", JSON.stringify(memberInfo));
         localStorage.setItem("isLogIn", "true");
+
+        // 쿠키에 accessToken 저장
+        setCookie("accessToken", accessToken, { path: "/", secure: true, sameSite: "Strict" });
 
         // 로그인 성공 알림
         const Toast = Swal.mixin({
@@ -41,10 +46,10 @@ const LoginContainer = ({ closeModal, setIsLoggedIn }) => {
           },
         });
 
-        // Toast.fire({
-        //   icon: "success",
-        //   title: "성공적으로 로그인되었습니다.",
-        // });
+        Toast.fire({
+          icon: "success",
+          title: "성공적으로 로그인되었습니다.",
+        });
 
         setIsLoggedIn(true); // 로그인 상태 설정
         closeModal(); // 모달 닫기
