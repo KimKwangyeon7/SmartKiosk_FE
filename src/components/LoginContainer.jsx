@@ -1,19 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { loginUser } from "../api/userApi";
-import EmailInput from "./EmailInput";
-import PasswordInput from "./PasswordInput";
-import * as u from "./UserContainerStyle";
-import Swal from "sweetalert2";
 import { useCookies } from "react-cookie";
+import Swal from "sweetalert2";
+import { useMutation } from "react-query";
 
-const LoginContainer = ({ closeModal, setIsLoggedIn }) => {
+const LoginContainer = () => {
   const [cookies, setCookie] = useCookies(["accessToken"]);
-  const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
 
   // 일반 로그인
   const { mutate: LoginUser } = useMutation({
@@ -25,12 +15,12 @@ const LoginContainer = ({ closeModal, setIsLoggedIn }) => {
         Swal.fire(`${res.dataHeader.resultMessage}`, "", "error");
       } else {
         // 로컬 스토리지에 memberInfo 및 로그인 여부 저장
-        const { memberInfo, accessToken } = res.dataBody; // 응답에서 accessToken 가져오기
+        const { memberInfo, validToken } = res.dataBody; // 유효기간 있는 토큰 가져오기
         localStorage.setItem("memberInfo", JSON.stringify(memberInfo));
         localStorage.setItem("isLogIn", "true");
 
         // 쿠키에 accessToken 저장
-        setCookie("accessToken", accessToken, { path: "/", secure: true, sameSite: "Strict" });
+        setCookie("accessToken", validToken, { path: "/", secure: true, sameSite: "Strict" });
 
         // 로그인 성공 알림
         const Toast = Swal.mixin({
@@ -62,6 +52,7 @@ const LoginContainer = ({ closeModal, setIsLoggedIn }) => {
     },
   });
 
+  // 로그인 요청 핸들러
   const handleLoginUser = (e) => {
     e.preventDefault();
     const data = {
@@ -90,6 +81,7 @@ const LoginContainer = ({ closeModal, setIsLoggedIn }) => {
               onChange={(e) => setPassword(e.target.value)}
               id="password"
               placeholder="비밀번호"
+              autoComplete="current-password"
             />
             <u.InputMsg>영문, 숫자, 특수문자 포함 8~16자</u.InputMsg>
           </u.InputContainer>
