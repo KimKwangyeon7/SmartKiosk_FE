@@ -4,17 +4,13 @@ import Swal from "sweetalert2";
 
 const { REACT_APP_API_URL } = process.env;
 
-// 프록시 URL 설정 (cors-anywhere 또는 다른 프록시 URL 사용)
-const PROXY_URL = "https://cors-anywhere.herokuapp.com/"; // 또는 "https://proxy.cors.sh/"
-
 // Axios 인스턴스 생성 함수
 const createAxiosInstance = (baseURL) => {
   const cookies = new Cookies();
 
   const instance = axios.create({
-    withCredentials: true,
-    // 프록시 URL을 baseURL 앞에 추가
-    baseURL: `${PROXY_URL}${baseURL || ""}`,
+    withCredentials: false,
+    baseURL: baseURL || "",
     headers: {
       "Content-Type": "application/json;charset=utf-8",
     },
