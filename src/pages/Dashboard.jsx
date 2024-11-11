@@ -537,6 +537,7 @@ const Dashboard = () => {
         console.error("데이터 가져오기 오류:", error);
       }
     };
+
     // --------------------------------------------------------------------------
     const fetchMonthData = async () => {
       try {
@@ -558,7 +559,7 @@ const Dashboard = () => {
 
         const label = Array.from({ length: len }, (_, i) => i + 1); // 1부터 len까지의 숫자 배열 생성
         //console.log(label);
-        const myMonthData = Object.values(response?.dataBody?.[chosenTask] || {});
+        const myMonthData = Object.values(response?.dataBody?.[selectedWork] || {});
 
         // 그래프 데이터셋 구성
         const myMonthDataset = {
@@ -787,6 +788,7 @@ const Dashboard = () => {
       ))}
     </select>
   );
+  const memberInfo = JSON.parse(localStorage.getItem("memberInfo") || "{}");
   const renderMonthButtons = () =>
     workList.map((work) => (
       <button
@@ -800,20 +802,14 @@ const Dashboard = () => {
   return (
     <div className="dashboard">
       {/* 자동 로그아웃 기능 */}
-      <div className="session-control">
-        <span>남은 시간: {millisToMinutesAndSeconds(remaining)}</span>
-      </div>
-      {/* Navbar */}
       <div className="navbar">
         <Link to="/">
           <img className="logo" src={require("../assets/logo.svg").default} alt="iM 뱅크" />
         </Link>
         <ul className="navbar-menu">
-          <li>
-            <Link to="#" onClick={handleLogout}>
-              로그아웃
-            </Link>
-          </li>
+          <li>{memberInfo.name ? `${memberInfo.name}님 환영합니다!` : ""}</li>
+          <li>남은 시간: {millisToMinutesAndSeconds(remaining)}</li>
+          <li onClick={handleLogout}>로그아웃</li>
         </ul>
       </div>
 
@@ -944,7 +940,7 @@ const Dashboard = () => {
                   </option>
                 ))}
               </select>
-              <select value={selectedTask} onChange={(e) => setSelectedTask(e.target.value)}>
+              <select value={selectedWork} onChange={(e) => setSelectedWork(e.target.value)}>
                 {taskList.map((task) => (
                   <option key={task} value={task}>
                     {task}

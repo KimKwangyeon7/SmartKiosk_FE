@@ -25,7 +25,6 @@ const KioskScreen = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [ticketInfoList, setTicketInfoList] = useState([]);
-  const [locInfoList, setLocInfoList] = useState([]);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [previewData, setPreviewData] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -43,7 +42,7 @@ const KioskScreen = () => {
   const dept_name = "강남";
   const [remaining, setRemaining] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
-
+  const [isBranch, setIsBranch] = useState(false);
   const { getRemainingTime, reset } = useIdleTimer({
     timeout: 300000,
     onIdle: () => handleLogout(),
@@ -51,12 +50,12 @@ const KioskScreen = () => {
   });
 
   const colorMap = [
-    { id: 0, color: "#808080" }, // 회색 (기본)
-    { id: 1, color: "#FFB6B6" }, // 빨간색 (연한 빨강)
-    { id: 2, color: "#FFD966" }, // 주황색 (연한 주황)
-    { id: 3, color: "#FFFF99" }, // 노란색 (연한 노랑)
-    { id: 4, color: "#B6FFB6" }, // 초록색 (연한 초록)
-    { id: 5, color: "#B6D4FF" }, // 파란색 (연한 파랑)
+    { id: 0, color: "rgba(128, 128, 128, 0.1)" }, // 기본 연한 회색
+    { id: 1, color: "rgba(255, 182, 182, 0.3)" }, // 연한 빨강
+    { id: 2, color: "rgba(255, 217, 102, 0.3)" }, // 연한 주황
+    { id: 3, color: "rgba(255, 255, 153, 0.3)" }, // 연한 노랑
+    { id: 4, color: "rgba(182, 255, 182, 0.3)" }, // 연한 초록
+    { id: 5, color: "rgba(182, 212, 255, 0.3)" }, // 연한 파랑
   ];
 
   // Format remaining time as MM : SS
@@ -75,6 +74,7 @@ const KioskScreen = () => {
       if (memberInfo && memberInfo.role === "BRANCH") {
         setIsEditMode(false);
         setIsDragMode(false);
+        setIsBranch(true);
       }
     }
 
@@ -356,20 +356,159 @@ const KioskScreen = () => {
         </div>
 
         <div className="right-section">
-          <div className="right-section-top">
-            {isLoggedIn && (
-              <div className="mode-buttons">
-                <button className="mode-button" onClick={toggleDragMode}>
-                  {isDragMode ? "드래그 모드 종료" : "드래그 모드 시작"}
-                </button>
-                <button className="mode-button" onClick={() => setIsEditMode(!isEditMode)}>
-                  {isEditMode ? "편집 모드 종료" : "편집 모드 시작"}
-                </button>
+          <div
+            className="right-section-top"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end", // 내부 요소들을 오른쪽에 정렬
+            }}
+          >
+            {isLoggedIn && isBranch && (
+              <div
+                className="mode-buttons"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end", // 오른쪽에 정렬
+                  gap: "10px", // 각 버튼 사이 간격
+                  marginTop: "40px", // 내비게이션 바와의 간격
+                  paddingRight: "20px", // 오른쪽으로 살짝 이동
+                }}
+              >
+                {isEditMode && !isAddingButton && isBranch && (
+                  <button
+                    className="add-button"
+                    onClick={() => setIsAddingButton(true)}
+                    style={{
+                      width: "45px",
+                      height: "45px",
+                      backgroundColor: "lightgray",
+                      borderRadius: "50%",
+                      fontSize: "24px",
+                      fontWeight: "bold",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    &#10133;
+                  </button>
+                )}
+
+                <div
+                  className={`toggle-switch ${isEditMode ? "active" : ""}`}
+                  onClick={() => setIsEditMode(!isEditMode)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    width: "120px",
+                    height: "40px",
+                    padding: "5px",
+                    backgroundColor: isEditMode ? "lightblue" : "lightgray",
+                    borderRadius: "20px",
+                    cursor: "pointer",
+                    position: "relative",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: isEditMode ? "10px" : "auto",
+                      right: isEditMode ? "auto" : "10px",
+                      transform: "translateY(-50%)",
+                      color: "white",
+                      fontSize: "14px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {isEditMode ? "편집 모드" : "일반 모드"}
+                  </div>
+                  <div
+                    className="toggle-circle"
+                    style={{
+                      width: "45px",
+                      height: "45px",
+                      backgroundColor: "white",
+                      borderRadius: "50%",
+                      transition: "transform 0.3s",
+                      transform: isEditMode ? "translateX(60px)" : "translateX(0)",
+                      zIndex: 1,
+                    }}
+                  />
+                </div>
+
+                <div
+                  className={`toggle-switch ${isDragMode ? "active" : ""}`}
+                  onClick={toggleDragMode}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    width: "120px",
+                    height: "40px",
+                    padding: "5px",
+                    backgroundColor: isDragMode ? "lightgreen" : "lightgray",
+                    borderRadius: "20px",
+                    cursor: "pointer",
+                    position: "relative",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: isDragMode ? "10px" : "auto",
+                      right: isDragMode ? "auto" : "10px",
+                      transform: "translateY(-50%)",
+                      color: "white",
+                      fontSize: "14px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {isDragMode ? "드래그 모드" : "일반 모드"}
+                  </div>
+                  <div
+                    className="toggle-circle"
+                    style={{
+                      width: "45px",
+                      height: "45px",
+                      backgroundColor: "white",
+                      borderRadius: "50%",
+                      transition: "transform 0.3s",
+                      transform: isDragMode ? "translateX(60px)" : "translateX(0)",
+                      zIndex: 1,
+                    }}
+                  />
+                </div>
               </div>
             )}
 
-            <div className="sub-button-container">
-              <button className="sub-service-button" onClick={handleMapLayout}>
+            <div
+              className="sub-button-container"
+              style={{
+                marginTop: "50px",
+                width: "100%",
+                display: "flex",
+                justifyContent: "flex-end",
+                paddingRight: "20px", // 오른쪽 마진 동일하게 적용
+              }}
+            >
+              <button
+                className="sub-service-button"
+                onClick={handleMapLayout}
+                style={{
+                  width: "92%",
+                  height: "80px",
+                  backgroundColor: "rgba(173, 216, 230, 0.3)", // 연한 민트색 배경
+                  color: "#000", // 검은색 글자
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  borderRadius: "12px",
+                  cursor: "pointer",
+                  border: "2px solid rgba(173, 216, 230, 0.5)", // 연한 민트색 테두리
+                }}
+              >
                 창구 배치도
               </button>
             </div>
@@ -457,7 +596,12 @@ const KioskScreen = () => {
                     <h1>{button.work_dvcd_nm}</h1>
                   )}
                   {!isEditMode && (
-                    <p className="waiting-info">
+                    <p
+                      className="waiting-info"
+                      style={{
+                        fontSize: `${Math.min(button.width, button.height) * 0.1}px`, // 버튼 크기에 비례한 글씨 크기
+                      }}
+                    >
                       대기 인원: {button.wait_people}
                       (예상 소요 시간: {button.wait_time} 분)
                     </p>
@@ -552,11 +696,6 @@ const KioskScreen = () => {
                   </div>
                 </div>
               </>
-            )}
-            {isEditMode && !isAddingButton && !isModifyingButton && (
-              <button className="add-button" onClick={() => setIsAddingButton(true)}>
-                &#10133;
-              </button>
             )}
           </div>
         </div>

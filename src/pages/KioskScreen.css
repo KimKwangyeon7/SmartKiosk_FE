@@ -103,7 +103,41 @@
 }
 
 .add-button {
-  font-size: 3vh;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  margin-right: 8px;
+  /* 편집 모드와 간격 조절 */
+}
+
+.sub-button-container {
+  width: 80%;
+  margin-top: 20px;
+  /* 버튼 위치를 더 아래로 */
+  margin-bottom: 20px;
+  /* 이미지와의 간격 */
+}
+
+.sub-service-button {
+  width: 100%;
+  padding: 16px;
+  /* 세로 길이를 좀 더 크게 */
+  font-size: 16px;
+  text-align: center;
+  background-color: rgba(200, 180, 255, 0.3);
+  color: #5a5a5a;
+  border: 2px solid rgba(180, 160, 230, 0.5);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.sub-service-button:hover {
+  background-color: rgba(200, 180, 255, 0.5);
+  transform: scale(1.05);
 }
 
 .button-input {
@@ -198,13 +232,9 @@
 }
 
 .right-section-top {
-  width: 100%;
-  height: 25%;
-  /* 오른쪽 섹션의 25% */
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f8f8f8;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .right-section-bottom {
@@ -251,8 +281,13 @@
 
 .mode-buttons {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  align-items: center;
+  gap: 8px;
+  /* 버튼 간 간격 조절 */
+}
+
+.mode-button {
+  padding: 8px 12px;
 }
 
 .mode-button {
@@ -270,14 +305,8 @@
   background-color: #357ab8;
 }
 
-.sub-button-container {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-top: 1rem;
-}
 
-.sub-service-button {
+/* .sub-service-button {
   font-size: 1.2rem;
   padding: 0.8rem 1.5rem;
   border: none;
@@ -286,9 +315,4 @@
   color: white;
   cursor: pointer;
   transition: transform 0.3s ease, background-color 0.3s ease;
-}
-
-.sub-service-button:hover {
-  background-color: #0056b3;
-  transform: scale(1.05);
-}
+} */

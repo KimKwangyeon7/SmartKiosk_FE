@@ -15,7 +15,8 @@ import { getTicketInfoList, startCounsel, endCounsel } from "../api/ticketApi";
 import { logoutUser } from "../api/userApi";
 import { Cookies } from "react-cookie";
 import Swal from "sweetalert2";
-
+import { useIdleTimer } from "react-idle-timer";
+import LoginContainer from "../components/LoginContainer";
 const deptNm = "강남";
 
 const BankLayout = () => {
@@ -36,7 +37,21 @@ const BankLayout = () => {
   const cookies = new Cookies();
   const [counselSessions, setCounselSessions] = useState({});
   const [isBranch, setIsBranch] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [remaining, setRemaining] = useState(null);
 
+  const { getRemainingTime, reset } = useIdleTimer({
+    timeout: 300000,
+    onIdle: () => handleLogout(),
+    throttle: 500,
+  });
+
+  function millisToMinutesAndSeconds(millis) {
+    const minutes = Math.floor(millis / 60000);
+    const seconds = Math.floor((millis % 60000) / 1000);
+    return `${minutes < 10 ? "0" : ""}${minutes} : ${seconds < 10 ? "0" : ""}${seconds}`;
+  }
   const fetchData = async () => {
     try {
       const res = await getWicketInfoList(deptNm);
@@ -75,6 +90,8 @@ const BankLayout = () => {
 
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLogIn") === "true";
+    setIsLoggedIn(loggedIn);
+
     if (loggedIn) {
       const memberInfo = JSON.parse(localStorage.getItem("memberInfo"));
       if (memberInfo && memberInfo.role === "BRANCH") {
@@ -83,18 +100,22 @@ const BankLayout = () => {
     }
 
     fetchData();
+    const interval = setInterval(() => {
+      setRemaining(getRemainingTime());
+    }, 500);
+    return () => clearInterval(interval);
     getWorkList();
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
-  }, []);
+  }, [getRemainingTime]);
 
   const currentCounters = counters[currentFloor] || {};
-  console.log(currentCounters);
+  //console.log(currentCounters);
   const currentKiosks = kiosks[currentFloor] || [];
   // 기본 그리드 크기
   const defaultGridSize = 6;
-
+  const closeModal = () => setIsLoginModalOpen(false);
   // 현재 층의 창구 수에 따라 gridSize 결정
   const gridSize = Math.max(defaultGridSize, Object.keys(currentCounters).length);
 
@@ -159,6 +180,7 @@ const BankLayout = () => {
       return { ...prev, [currentFloor]: updatedFloorCounters };
     });
   };
+  const memberInfo = JSON.parse(localStorage.getItem("memberInfo") || "{}");
 
   const handleKioskDrop = (x, y, prevCoord) => {
     setKiosks((prev) => {
@@ -277,15 +299,17 @@ const BankLayout = () => {
 
     switch (task.color) {
       case 1:
-        return "rgba(255, 0, 0, 0.3)"; // 연한 빨강
+        return "rgba(255, 182, 182, 0.3)"; // 연한 빨강
       case 2:
-        return "rgba(255, 165, 0, 0.3)"; // 연한 주황
+        return "rgba(255, 217, 102, 0.3)"; // 연한 주황
       case 3:
-        return "rgba(255, 255, 0, 0.3)"; // 연한 노랑
+        return "rgba(255, 255, 153, 0.3)"; // 연한 노랑
       case 4:
-        return "rgba(0, 0, 255, 0.3)"; // 연한 파랑
+        return "rgba(182, 255, 182, 0.3)"; // 연한 초록
+      case 5:
+        return "rgba(182, 212, 255, 0.3)"; // 연한 파랑
       default:
-        return "rgba(0, 0, 0, 0.1)"; // 기본 연한 회색
+        return "rgba(128, 128, 128, 0.1)"; // 기본 연한 회색
     }
   };
 
@@ -544,20 +568,19 @@ const BankLayout = () => {
         height: "100vh",
       }}
     >
-      {/* Navbar */}
       <div className="navbar">
         <Link to="/">
           <img className="logo" src={require("../assets/logo.svg").default} alt="iM 뱅크" />
         </Link>
         <ul className="navbar-menu">
-          <li>
-            {}
-            <Link to="#" onClick={handleLogout}>
-              로그아웃
-            </Link>
-            <Link to="#" onClick={handleLogout}>
-              로그인
-            </Link>
+          {isLoggedIn && (
+            <>
+              <li>{memberInfo.name ? `${memberInfo.name}님 환영합니다!` : ""}</li>
+              <li>남은 시간: {millisToMinutesAndSeconds(remaining)}</li>
+            </>
+          )}
+          <li onClick={isLoggedIn ? handleLogout : () => setIsLoginModalOpen(true)}>
+            {isLoggedIn ? "로그아웃" : "로그인"}
           </li>
         </ul>
       </div>
@@ -817,6 +840,16 @@ const BankLayout = () => {
             ))}
           </div>
         </>
+      )}
+      {isLoginModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="close-button" onClick={closeModal}>
+              &#10006;
+            </button>
+            <LoginContainer closeModal={closeModal} setIsLoggedIn={setIsLoggedIn} />
+          </div>
+        </div>
       )}
     </div>
   );
