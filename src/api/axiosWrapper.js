@@ -54,7 +54,7 @@ const handleLogout = () => {
   localStorage.clear(); // 세션 스토리지 클리어
 
   Swal.fire("세션이 만료되었습니다.", "다시 로그인 해주세요.", "info").then(() => {
-    window.location.reload();
+    //window.location.reload();
   });
 };
 
