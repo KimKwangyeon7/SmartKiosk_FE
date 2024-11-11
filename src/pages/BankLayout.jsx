@@ -100,13 +100,20 @@ const BankLayout = () => {
     }
 
     fetchData();
+    getWorkList();
+
+    // Event listener 추가
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    // Interval 설정
     const interval = setInterval(() => {
       setRemaining(getRemainingTime());
     }, 500);
-    return () => clearInterval(interval);
-    getWorkList();
+
+    // cleanup 함수 반환
     return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("mousedown", handleOutsideClick); // Event listener 제거
+      clearInterval(interval); // Interval 제거
     };
   }, [getRemainingTime]);
 
@@ -348,12 +355,15 @@ const BankLayout = () => {
           [wd_id]: counsel_id,
         }));
 
-        Swal.fire(
-          `${cnt}번 고객님. ${wd_floor}층 ${wd_num}번 창구로 와주세요!`,
-          `${dept_nm} 지점 ${wd_dvcd_nm}`,
-          "info"
-        );
-        console.log("상담 시작!", res);
+        Swal.fire({
+          title: `${cnt}번 고객님. ${wd_floor}층 ${wd_num}번 창구로 와주세요!`,
+          text: `${dept_nm} 지점 ${wd_dvcd_nm}`,
+          icon: "info",
+          customClass: {
+            popup: "swal-wide", // 추가된 클래스
+          },
+        });
+        //console.log("상담 시작!", res);
       }
     } catch (error) {
       console.error("상담 시작 중 오류 발생:", error);
@@ -560,6 +570,7 @@ const BankLayout = () => {
 
   return (
     <div
+      className="bank-layout-container"
       style={{
         display: "flex",
         flexDirection: "column",
@@ -726,7 +737,7 @@ const BankLayout = () => {
                         draggable={editMode}
                         onDragStart={(e) => e.dataTransfer.setData("kiosk", coord)}
                       >
-                        키오스크
+                        {currentKiosks.indexOf(coord) === 0 && currentFloor ? "키오스크" : "출구"}
                       </div>
                     ) : (
                       currentCounters[coord] && (
@@ -833,7 +844,11 @@ const BankLayout = () => {
           >
             {floors.map((floor) => (
               <div key={floor} className="floor-item" style={{ margin: "0 5px" }}>
-                <button onClick={() => setCurrentFloor(floor)} className="floor-button">
+                <button
+                  onClick={() => setCurrentFloor(floor)}
+                  className={`floor-button ${currentFloor === floor ? "selected" : ""}`}
+                  style={{ fontWeight: "bold" }}
+                >
                   {floor}층
                 </button>
               </div>
@@ -841,6 +856,7 @@ const BankLayout = () => {
           </div>
         </>
       )}
+
       {isLoginModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
